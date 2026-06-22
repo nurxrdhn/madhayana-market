@@ -1,8 +1,10 @@
 import React from 'react';
 import Home from './pages/home/Home';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 
-// Komponen Detektor Eror Darurat (Tetap dipertahankan untuk jaga-jaga)
+// Komponen Detektor Eror Darurat
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -31,9 +33,13 @@ class ErrorBoundary extends React.Component {
 export default function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <Home />
-      </AuthProvider>
+      <ThemeProvider>
+        <NotificationProvider>
+          <AuthProvider>
+            <Home />
+          </AuthProvider>
+        </NotificationProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
