@@ -4,7 +4,6 @@ import { useAuth } from '../../contexts/AuthContext';
 export default function OperatorDashboard() {
   const { user } = useAuth();
 
-  // Simulasi antrean tugas moderasi produk digital V100 (Blueprint 13)
   const moderationQueue = [
     { id: "PROD-091", title: "Source Code Script E-Commerce React", seller: "SLR-2026-044211", category: "Software" },
     { id: "PROD-092", title: "Template Canva Microblogging Premium", seller: "SLR-2026-011234", category: "Template" }
@@ -18,8 +17,7 @@ export default function OperatorDashboard() {
           <h2 style={{ color: '#C2410C', margin: 0 }}>Operator Control Center</h2>
           <p style={{ color: '#9A3412', margin: '5px 0 0 0', fontSize: '14px' }}>ID Operator: {user?.id || "OP-2026-XXXXXX"}</p>
         </div>
-        
-        {/* Aturan UI/UX Poin 25: Tombol "+" hanya muncul untuk OP, SPV, ADM */}
+
         <button style={{ padding: '10px 20px', backgroundColor: '#C2410C', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
           ➕ Tambah Banner Baru
         </button>
@@ -41,20 +39,16 @@ export default function OperatorDashboard() {
       <div style={{ backgroundColor: '#FFF', padding: '25px', borderRadius: '12px', border: '1px solid #FFEDD5' }}>
         <h3 style={{ margin: '0 0 20px 0', color: '#7C2D12' }}>🛡️ Panel Review & Verifikasi Produk Digital</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          {moderationQueue.map((item, idx) => (
-            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid #E2E8F0', borderRadius: '8px', backgroundColor: '#FAFAFA' }}>
+          {moderationQueue.map((item) => (
+            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid #FED7AA', borderRadius: '8px', backgroundColor: '#FFFDFB' }}>
               <div>
-                <span style={{ fontSize: '11px', backgroundColor: '#FFEDD5', color: '#C2410C', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{item.category}</span>
-                <h4 style={{ margin: '5px 0 2px 0', color: '#1E293B' }}>{item.title}</h4>
-                <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Pengirim: {item.seller}</p>
+                <span style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: '#FFEDD5', color: '#C2410C', borderRadius: '4px', fontWeight: 'bold' }}>{item.category}</span>
+                <h4 style={{ margin: '8px 0 4px 0', color: '#431407' }}>{item.title}</h4>
+                <p style={{ margin: 0, fontSize: '12px', color: '#9A3412' }}>ID: {item.id} | Penjual: {item.seller}</p>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button style={{ padding: '6px 14px', backgroundColor: '#10B981', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                  Setujui
-                </button>
-                <button style={{ padding: '6px 14px', backgroundColor: '#EF4444', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                  Tolak
-                </button>
+                <button style={{ padding: '6px 12px', backgroundColor: '#DC2626', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Tolak</button>
+                <button style={{ padding: '6px 12px', backgroundColor: '#16A34A', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Setujui</button>
               </div>
             </div>
           ))}
