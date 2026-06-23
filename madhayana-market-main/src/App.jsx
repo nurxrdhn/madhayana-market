@@ -1,1 +1,0 @@
-export default function App(){return <h1>Madhayana Market V100 Enterprise Ready</h1>}
