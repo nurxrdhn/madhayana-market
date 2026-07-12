@@ -292,6 +292,12 @@ export function AuthProvider({ children }) {
           }
         );
 
+    if (!savedProfile) {
+      throw new Error(
+        "Profil pengguna gagal dibuat di Firestore."
+      );
+    }
+
     if (savedProfile.status === "blocked") {
       await signOut(auth);
 
