@@ -3,3 +3,7 @@ dist
 .env
 .env.local
 .DS_Store
+
+# Local backups and temporary inspection files
+*.backup.jsx
+struktur-auth-madhayana.txt
