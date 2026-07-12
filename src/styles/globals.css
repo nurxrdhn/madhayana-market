@@ -3,3 +3,59 @@
 @media(max-width:1000px){.role-grid{grid-template-columns:repeat(2,1fr)}.login-page{grid-template-columns:1fr}.login-visual{display:none}.login-form{padding:55px 0}.stat-grid,.quick-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:720px){.dashboard{grid-template-columns:1fr}.sidebar{position:static;height:auto}.sidebar nav{display:grid;grid-template-columns:repeat(2,1fr)}.side-bottom{display:none}.dash-main{padding:0 16px 35px}.dash-header{height:auto;padding:18px 0}.search-box{display:none}.welcome-banner{padding:24px}.banner-art{font-size:55px}.stat-grid,.quick-grid{grid-template-columns:1fr 1fr}.role-grid{grid-template-columns:1fr}.role-wrap{padding-top:45px}.simple-header{padding:0 20px}.simple-header .text-btn{font-size:11px}.intro-card{padding:28px 4px}.intro-card h1{font-size:34px}.brand-lockup{left:22px}.skip-btn{right:22px}.row-end strong{display:none}}
 @media(max-width:460px){.stat-grid,.quick-grid{grid-template-columns:1fr}.banner-art{display:none}.role-wrap{padding-left:18px;padding-right:18px}.intro-actions{flex-direction:column-reverse}.intro-actions .btn{width:100%}.sidebar nav{grid-template-columns:1fr}.data-row{align-items:flex-start}.row-end{align-self:center}}
+
+.google-login-btn {
+  width: 100%;
+  min-height: 52px;
+  margin: 10px 0 4px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 1px solid #d8dee9;
+  border-radius: 14px;
+  color: #263247;
+  background: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(22, 34, 61, 0.06);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.google-login-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: #b9c4d6;
+  box-shadow: 0 12px 26px rgba(22, 34, 61, 0.11);
+}
+
+.google-login-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.auth-divider {
+  position: relative;
+  margin: 22px 0;
+  text-align: center;
+}
+
+.auth-divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: #e3e8f0;
+}
+
+.auth-divider span {
+  position: relative;
+  padding: 0 13px;
+  color: #8490a3;
+  background: #ffffff;
+  font-size: 12px;
+}

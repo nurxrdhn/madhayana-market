@@ -1,3 +1,11 @@
+
+========================================
+src/main.jsx
+========================================
+import React from 'react';import ReactDOM from 'react-dom/client';import App from './App';ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+========================================
+src/App.jsx
+========================================
 import React, { useEffect, useMemo, useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
@@ -19,108 +27,23 @@ const roles = [
   { key: 'guest', code: 'GST', icon: '👀', title: 'Guest', desc: 'Lihat-lihat katalog tanpa akun. Data diminta hanya ketika akan bertransaksi.', color: 'slate' }
 ];
 
-
 function AppShell() {
-  const {
-    user,
-    loading,
-    login,
-    register,
-    loginGoogle,
-    enterAsGuest,
-    logout,
-  } = useAuth();
-
+  const { user, loginAs, logout } = useAuth();
   const { isDarkMode, toggleTheme } = useTheme();
-
-  const [phase, setPhase] = useState(() =>
-    localStorage.getItem("madhayana_intro_done")
-      ? "role"
-      : "intro"
-  );
-
+  const [phase, setPhase] = useState(() => localStorage.getItem('madhayana_intro_done') ? 'role' : 'intro');
   const [slide, setSlide] = useState(0);
   const [chosenRole, setChosenRole] = useState(null);
 
   const completeIntro = () => {
-    localStorage.setItem("madhayana_intro_done", "1");
-    setPhase("role");
+    localStorage.setItem('madhayana_intro_done', '1');
+    setPhase('role');
   };
 
-  if (loading) {
-    return (
-      <div className="intro-page">
-        <main className="intro-card">
-          <div className="intro-icon">M</div>
-          <p className="eyebrow">MADHAYANA MARKET</p>
-          <h1>Menyiapkan akunmu...</h1>
-          <p className="intro-copy">
-            Mohon tunggu sebentar.
-          </p>
-        </main>
-      </div>
-    );
-  }
-
-  if (user) {
-    return (
-      <Dashboard
-        role={user.role}
-        user={user}
-        onLogout={async () => {
-          await logout();
-          setPhase("role");
-        }}
-        isDarkMode={isDarkMode}
-        toggleTheme={toggleTheme}
-      />
-    );
-  }
-
-  if (phase === "intro") {
-    return (
-      <OpeningSlides
-        slide={slide}
-        setSlide={setSlide}
-        onDone={completeIntro}
-      />
-    );
-  }
-
-  if (phase === "login" && chosenRole) {
-    return (
-      <LoginPanel
-        role={chosenRole}
-        onBack={() => setPhase("role")}
-        onLogin={login}
-        onRegister={register}
-        onGoogle={loginGoogle}
-      />
-    );
-  }
-
-  return (
-    <RolePicker
-      onChoose={(role) => {
-        if (role.key === "guest") {
-          enterAsGuest();
-          return;
-        }
-
-        setChosenRole(role);
-        setPhase("login");
-      }}
-      onReplay={() => {
-        localStorage.removeItem(
-          "madhayana_intro_done"
-        );
-        setSlide(0);
-        setPhase("intro");
-      }}
-    />
-  );
+  if (user) return <Dashboard role={user.role} user={user} onLogout={() => { logout(); setPhase('role'); }} isDarkMode={isDarkMode} toggleTheme={toggleTheme} />;
+  if (phase === 'intro') return <OpeningSlides slide={slide} setSlide={setSlide} onDone={completeIntro} />;
+  if (phase === 'login' && chosenRole) return <LoginPanel role={chosenRole} onBack={() => setPhase('role')} onLogin={(data) => loginAs(chosenRole.key, data)} />;
+  return <RolePicker onChoose={(role) => role.key === 'guest' ? loginAs('guest', { name: 'Guest' }) : (setChosenRole(role), setPhase('login'))} onReplay={() => { localStorage.removeItem('madhayana_intro_done'); setSlide(0); setPhase('intro'); }} />;
 }
-
 
 function OpeningSlides({ slide, setSlide, onDone }) {
   const item = slides[slide];
@@ -160,365 +83,21 @@ function RolePicker({ onChoose, onReplay }) {
   </div>;
 }
 
-
-function GoogleLogo() {
-  return (
-    <svg
-      width="21"
-      height="21"
-      viewBox="0 0 48 48"
-      aria-hidden="true"
-    >
-      <path
-        fill="#FFC107"
-        d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"
-      />
-      <path
-        fill="#FF3D00"
-        d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4c-7.7 0-14.4 4.3-17.7 10.7z"
-      />
-      <path
-        fill="#4CAF50"
-        d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.7-3.3-11.3-7.9l-6.5 5C9.5 39.4 16.2 44 24 44z"
-      />
-      <path
-        fill="#1976D2"
-        d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.2-.1-2.4-.4-3.5z"
-      />
-    </svg>
-  );
+function LoginPanel({ role, onBack, onLogin }) {
+  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' });
+  const submit = (e) => { e.preventDefault(); onLogin({ name: form.name || role.title, email: form.email }); };
+  return <div className="login-page"><div className={`login-visual ${role.color}`}><button className="back-link" onClick={onBack}>← Kembali</button><div className="visual-content"><span className="giant-icon">{role.icon}</span><p className="eyebrow">AKSES {role.title.toUpperCase()}</p><h1>Dashboard khusus untuk {role.title}</h1><p>{role.desc}</p><div className="feature-pills"><span>Akses berbasis peran</span><span>Aktivitas tercatat</span><span>Keamanan berlapis</span></div></div></div>
+    <form className="login-form" onSubmit={submit}><div className="form-brand">MADHAYANA MARKET</div><h2>Masuk sebagai {role.title}</h2><p>Gunakan akun yang sudah terdaftar untuk melanjutkan.</p>
+      <label>Nama lengkap<input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Contoh: Nur Ramadhan"/></label>
+      <label>Email<input type="email" required value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="nama@email.com"/></label>
+      <label>Kata sandi<input type="password" required value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="Minimal 8 karakter"/></label>
+      <div className="form-row"><label className="check"><input type="checkbox"/> Ingat saya</label><button type="button" className="text-btn">Lupa kata sandi?</button></div>
+      <button className="btn primary full" type="submit">Masuk ke Dashboard</button>
+      {role.key !== 'operator' && <p className="signup-copy">Belum punya akun? <button type="button" className="text-btn">Daftar sebagai {role.title}</button></p>}
+      {role.key === 'operator' && <p className="operator-warning">Akun operator hanya dibuat oleh Super Admin.</p>}
+    </form>
+  </div>;
 }
-
-function LoginPanel({
-  role,
-  onBack,
-  onLogin,
-  onRegister,
-  onGoogle,
-}) {
-  const operatorMode = role.key === "operator";
-
-  const [mode, setMode] = useState(
-    operatorMode ? "login" : "register"
-  );
-
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const [processing, setProcessing] = useState(false);
-  const [message, setMessage] = useState("");
-
-  const updateForm = (event) => {
-    const { name, value } = event.target;
-
-    setForm((current) => ({
-      ...current,
-      [name]: value,
-    }));
-  };
-
-  const getErrorMessage = (error) => {
-    const messages = {
-      "auth/email-already-in-use":
-        "Email tersebut sudah terdaftar.",
-      "auth/invalid-email":
-        "Format email belum benar.",
-      "auth/weak-password":
-        "Kata sandi terlalu lemah.",
-      "auth/invalid-credential":
-        "Email atau kata sandi tidak sesuai.",
-      "auth/user-not-found":
-        "Akun tidak ditemukan.",
-      "auth/wrong-password":
-        "Kata sandi tidak sesuai.",
-      "auth/popup-closed-by-user":
-        "Jendela Google ditutup sebelum proses selesai.",
-      "auth/popup-blocked":
-        "Popup Google diblokir oleh browser.",
-      "auth/unauthorized-domain":
-        "Domain ini belum diizinkan di Firebase Authentication.",
-    };
-
-    return (
-      messages[error?.code] ||
-      error?.message ||
-      "Proses autentikasi gagal."
-    );
-  };
-
-  const submit = async (event) => {
-    event.preventDefault();
-    setMessage("");
-
-    if (
-      mode === "register" &&
-      form.password !== form.confirmPassword
-    ) {
-      setMessage(
-        "Konfirmasi kata sandi tidak sama."
-      );
-      return;
-    }
-
-    if (form.password.length < 6) {
-      setMessage(
-        "Kata sandi minimal terdiri dari 6 karakter."
-      );
-      return;
-    }
-
-    try {
-      setProcessing(true);
-
-      if (mode === "register") {
-        await onRegister({
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          password: form.password,
-          role: role.key,
-        });
-      } else {
-        const profile = await onLogin({
-          email: form.email,
-          password: form.password,
-        });
-
-        if (
-          operatorMode &&
-          profile.role !== "operator"
-        ) {
-          throw new Error(
-            "Akun ini bukan akun operator."
-          );
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      setMessage(getErrorMessage(error));
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleGoogle = async () => {
-    try {
-      setProcessing(true);
-      setMessage("");
-
-      await onGoogle(role.key);
-    } catch (error) {
-      console.error(error);
-      setMessage(getErrorMessage(error));
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  return (
-    <div className="login-page">
-      <div className={`login-visual ${role.color}`}>
-        <button
-          className="back-link"
-          onClick={onBack}
-        >
-          ← Kembali
-        </button>
-
-        <div className="visual-content">
-          <span className="giant-icon">
-            {role.icon}
-          </span>
-
-          <p className="eyebrow">
-            AKSES {role.title.toUpperCase()}
-          </p>
-
-          <h1>
-            {operatorMode
-              ? "Pusat operasional Madhayana Market"
-              : mode === "register"
-                ? `Mulai sebagai ${role.title}`
-                : `Selamat datang kembali`}
-          </h1>
-
-          <p>{role.desc}</p>
-
-          <div className="feature-pills">
-            <span>Akses berbasis peran</span>
-            <span>Profil tersimpan aman</span>
-            <span>Login Firebase</span>
-          </div>
-        </div>
-      </div>
-
-      <form
-        className="login-form"
-        onSubmit={submit}
-      >
-        <div className="form-brand">
-          MADHAYANA MARKET
-        </div>
-
-        <h2>
-          {mode === "register"
-            ? `Daftar sebagai ${role.title}`
-            : `Masuk sebagai ${role.title}`}
-        </h2>
-
-        <p>
-          {operatorMode
-            ? "Gunakan akun operator yang diberikan oleh Super Admin."
-            : "Gunakan email atau lanjutkan dengan akun Google."}
-        </p>
-
-        {!operatorMode && (
-          <>
-            <button
-              type="button"
-              className="google-login-btn"
-              onClick={handleGoogle}
-              disabled={processing}
-            >
-              <GoogleLogo />
-              {processing
-                ? "Menghubungkan..."
-                : mode === "register"
-                  ? "Daftar dengan Google"
-                  : "Masuk dengan Google"}
-            </button>
-
-            <div className="auth-divider">
-              <span>atau gunakan email</span>
-            </div>
-          </>
-        )}
-
-        {mode === "register" && (
-          <label>
-            Nama lengkap
-            <input
-              name="name"
-              required
-              value={form.name}
-              onChange={updateForm}
-              placeholder="Contoh: Nur Ramadhan"
-            />
-          </label>
-        )}
-
-        <label>
-          Email
-          <input
-            name="email"
-            type="email"
-            required
-            value={form.email}
-            onChange={updateForm}
-            placeholder="nama@gmail.com"
-          />
-        </label>
-
-        {mode === "register" && (
-          <label>
-            Nomor WhatsApp
-            <input
-              name="phone"
-              required
-              value={form.phone}
-              onChange={updateForm}
-              placeholder="08xxxxxxxxxx"
-            />
-          </label>
-        )}
-
-        <label>
-          Kata sandi
-          <input
-            name="password"
-            type="password"
-            required
-            value={form.password}
-            onChange={updateForm}
-            placeholder="Minimal 6 karakter"
-          />
-        </label>
-
-        {mode === "register" && (
-          <label>
-            Konfirmasi kata sandi
-            <input
-              name="confirmPassword"
-              type="password"
-              required
-              value={form.confirmPassword}
-              onChange={updateForm}
-              placeholder="Ulangi kata sandi"
-            />
-          </label>
-        )}
-
-        {message && (
-          <div className="operator-warning">
-            {message}
-          </div>
-        )}
-
-        <button
-          className="btn primary full"
-          type="submit"
-          disabled={processing}
-        >
-          {processing
-            ? "Memproses..."
-            : mode === "register"
-              ? "Daftar dan Buka Beranda"
-              : "Masuk ke Beranda"}
-        </button>
-
-        {!operatorMode && (
-          <p className="signup-copy">
-            {mode === "register"
-              ? "Sudah mempunyai akun?"
-              : "Belum mempunyai akun?"}
-
-            {" "}
-
-            <button
-              type="button"
-              className="text-btn"
-              onClick={() => {
-                setMode(
-                  mode === "register"
-                    ? "login"
-                    : "register"
-                );
-                setMessage("");
-              }}
-            >
-              {mode === "register"
-                ? "Masuk sekarang"
-                : `Daftar sebagai ${role.title}`}
-            </button>
-          </p>
-        )}
-
-        {operatorMode && (
-          <p className="operator-warning">
-            Akun operator hanya dibuat oleh
-            Super Admin.
-          </p>
-        )}
-      </form>
-    </div>
-  );
-}
-
 
 const dashboardConfig = {
   operator: { title:'Pusat Operasional', accent:'violet', nav:['Ringkasan','Moderasi Produk','Transaksi','Pengguna','Settlement','Tiket Bantuan','Laporan'], stats:[['Produk menunggu','24','+6 hari ini'],['Transaksi diproses','128','92% otomatis'],['Tiket terbuka','17','4 prioritas tinggi'],['Settlement','Rp 18,4 jt','Menunggu persetujuan']], actions:['Tinjau produk','Verifikasi pembayaran','Proses refund','Balas tiket'], tableTitle:'Aktivitas yang perlu ditangani' },
@@ -557,3 +136,194 @@ const navIcon = (x) => ({'Ringkasan':'⌂','Beranda':'⌂','Produk Saya':'□','
 const welcomeText = (role) => role === 'operator' ? 'Pantau operasional marketplace, selesaikan antrean, dan jaga kualitas layanan.' : role === 'reseller' ? 'Kelola toko digital, proses pesanan, dan tingkatkan performa penjualanmu.' : role === 'buyer' ? 'Temukan produk digital terbaik, kelola pesanan, dan nikmati keuntungan membership.' : 'Lihat katalog secara bebas. Saat ingin membeli, kamu cukup mengisi data transaksi.';
 
 export default function App(){return <ThemeProvider><NotificationProvider><AuthProvider><AppShell/></AuthProvider></NotificationProvider></ThemeProvider>}
+
+========================================
+src/routes/AppRoutes.jsx
+========================================
+import React from 'react';
+
+export default function AppRoutes() {
+  return (
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h1>Madhayana Market V100 - Route Engine Active</h1>
+      <p>Sistem otentikasi, otorisasi berbasis Role-Permission Matrix telah siap dikonfigurasikan.</p>
+    </div>
+  );
+}
+
+========================================
+src/routes/PrivateRoute.jsx
+========================================
+// PrivateRoute.jsx
+export default function Component() { return null; }
+
+========================================
+src/routes/RoleRoute.jsx
+========================================
+// RoleRoute.jsx
+export default function Component() { return null; }
+
+========================================
+src/contexts/AuthContext.jsx
+========================================
+import React, { createContext, useContext, useEffect, useState } from 'react';
+const AuthContext = createContext(null);
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(() => { try { return JSON.parse(sessionStorage.getItem('madhayana_user')) || null; } catch { return null; } });
+  useEffect(() => { user ? sessionStorage.setItem('madhayana_user', JSON.stringify(user)) : sessionStorage.removeItem('madhayana_user'); }, [user]);
+  const loginAs = (role, data={}) => setUser({ role, id: `${role.slice(0,3).toUpperCase()}-2026-${String(Date.now()).slice(-6)}`, ...data });
+  const logout = () => setUser(null);
+  return <AuthContext.Provider value={{ user, setUser, loginAs, logout }}>{children}</AuthContext.Provider>;
+}
+export const useAuth = () => useContext(AuthContext);
+
+========================================
+src/firebase/config.js
+========================================
+import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAr3arskRQdXyBhC1WBQBhFiPIA3l-fWzA",
+  authDomain: "madhayana-80f71.firebaseapp.com",
+  projectId: "madhayana-80f71",
+  storageBucket: "madhayana-80f71.firebasestorage.app",
+  messagingSenderId: "948236566177",
+  appId: "1:948236566177:web:c39b7a78876e72760d7ae0",
+  measurementId: "G-8C0DB7EGYZ"
+};
+
+const app = initializeApp(firebaseConfig);
+
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+
+export const googleProvider = new GoogleAuthProvider();
+
+googleProvider.setCustomParameters({
+  prompt: "select_account"
+});
+
+export default app;
+
+========================================
+src/firebase/auth.js
+========================================
+// auth.js
+
+========================================
+src/pages/auth/Login.jsx
+========================================
+import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+
+export default function Login() {
+  const { setUser } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleEmailLogin = (e) => {
+    e.preventDefault();
+    // Simulasi Login Email berhasil langsung menjadi Buyer
+    setUser({ role: 'Buyer', id: 'BYR-2026-089123' });
+    alert('Login via Email Sukses sebagai Buyer!');
+  };
+
+  const handleGoogleLogin = () => {
+    // Simulasi Firebase Google Login
+    setUser({ role: 'Seller', id: 'SLR-2026-044211' });
+    alert('Login via Google Firebase Sukses sebagai Seller!');
+  };
+
+  return (
+    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '30px', border: '1px solid #E2E8F0', borderRadius: '12px', fontFamily: 'Arial' }}>
+      <h2 style={{ textAlign: 'center', color: '#0052FF', marginBottom: '20px' }}>Masuk Madhayana Market</h2>
+      
+      <form onSubmit={handleEmailLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <input type="email" placeholder="Email Anda" required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} value={email} onChange={e => setEmail(e.target.value)} />
+        <input type="password" placeholder="Password" required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} value={password} onChange={e => setPassword(e.target.value)} />
+        <button type="submit" style={{ padding: '10px', backgroundColor: '#0052FF', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>Masuk dengan Email</button>
+      </form>
+
+      <div style={{ textTransform: 'uppercase', textAlign: 'center', margin: '20px 0', fontSize: '12px', color: '#94A3B8' }}>atau</div>
+
+      <button onClick={handleGoogleLogin} style={{ width: '100%', padding: '10px', backgroundColor: '#FFFFFF', color: '#334155', border: '1px solid #CBD5E1', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+        🌐 Masuk Direct Google
+      </button>
+    </div>
+  );
+}
+
+========================================
+src/pages/auth/Register.jsx
+========================================
+import React, { useState } from 'react';
+
+export default function Register() {
+  const [roleChoice, setRoleChoice] = useState('Buyer');
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    alert(`Pendaftaran Akun Baru sebagai [${roleChoice}] Berhasil diproses!`);
+  };
+
+  return (
+    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '30px', border: '1px solid #E2E8F0', borderRadius: '12px', fontFamily: 'Arial' }}>
+      <h2 style={{ textAlign: 'center', color: '#0052FF', marginBottom: '10px' }}>Daftar Akun Baru</h2>
+      <p style={{ textAlign: 'center', fontSize: '14px', color: '#64748B', marginBottom: '20px' }}>Pilih Peran Anda sesuai Blueprint Onboarding</p>
+
+      <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <input type="text" placeholder="Username Unik" required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
+        <input type="email" placeholder="Email" required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
+        
+        <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Pilih Peran Utama:</label>
+        <select style={{ padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} value={roleChoice} onChange={e => setRoleChoice(e.target.value)}>
+          <option value="Guest">Guest (Hanya Melihat)</option>
+          <option value="Buyer">Buyer (Beli & Download Lisensi)</option>
+          <option value="Seller">Seller (Jual & Kelola Produk)</option>
+        </select>
+
+        <button type="submit" style={{ padding: '10px', backgroundColor: '#10B981', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' }}>Daftar Sekarang</button>
+      </form>
+    </div>
+  );
+}
+
+========================================
+src/pages/auth/GoogleAuth.jsx
+========================================
+// GoogleAuth.jsx
+export default function Component() { return null; }
+
+========================================
+package.json
+========================================
+{
+  "name": "madhayana-market-v101",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@flaticon/flaticon-uicons": "^3.3.1",
+    "clsx": "^2.1.1",
+    "firebase": "^11.10.0",
+    "framer-motion": "^12.42.2",
+    "lucide-react": "^1.24.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hot-toast": "^2.6.0",
+    "react-router-dom": "^6.30.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}
