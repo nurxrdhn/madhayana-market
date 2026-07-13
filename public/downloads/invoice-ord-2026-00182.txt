@@ -1,0 +1,22 @@
+==================================================
+                 MADHAYANA MARKET
+==================================================
+
+INVOICE: ORD-2026-00182
+Tanggal: 13 Juli 2026
+
+Pembeli:
+Nur Ramadhan
+
+Produk:
+Premium React Dashboard
+
+Total:
+Rp150.000
+
+Status:
+LUNAS
+
+==================================================
+Dokumen ini merupakan invoice contoh Madhayana Market.
+==================================================

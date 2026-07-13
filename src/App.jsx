@@ -737,6 +737,7 @@ function BuyerDashboard({ user, onLogout }) {
     ["fi fi-rr-home", "Beranda"],
     ["fi fi-rr-box", "Pesanan"],
     ["fi fi-rr-heart", "Favorit"],
+    ["fi fi-rr-shopping-cart", "Keranjang"],
     ["fi fi-rr-download", "Unduhan"],
     ["fi fi-rr-coins", "Koin"],
     ["fi fi-rr-user", "Profil"],
@@ -762,6 +763,19 @@ function BuyerDashboard({ user, onLogout }) {
     email: user.email || "",
     phone: user.phone || "",
   });
+
+  const [cart, setCart] = useState(() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("madhayana_buyer_cart")
+      ) || [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const buyerProducts = products.map((product, index) => ({
     ...product,
@@ -797,17 +811,21 @@ function BuyerDashboard({ user, onLogout }) {
   const downloads = [
     {
       id: "download-1",
-      name: "Premium React Dashboard",
-      type: "ZIP",
-      size: "18,4 MB",
+      name: "Premium React Dashboard Demo",
+      type: "TXT",
+      size: "1 KB",
       icon: "fi fi-rr-layout-fluid",
+      url: "/downloads/premium-react-dashboard-demo.txt",
+      filename: "premium-react-dashboard-demo.txt",
     },
     {
       id: "download-2",
       name: "Invoice ORD-2026-00182",
-      type: "PDF",
-      size: "320 KB",
+      type: "TXT",
+      size: "1 KB",
       icon: "fi fi-rr-file-invoice",
+      url: "/downloads/invoice-ord-2026-00182.txt",
+      filename: "invoice-ord-2026-00182.txt",
     },
   ];
 
@@ -850,6 +868,82 @@ function BuyerDashboard({ user, onLogout }) {
 
       return next;
     });
+  };
+
+  const addToCart = (product) => {
+    setCart((current) => {
+      const existing = current.find(
+        (item) => item.id === product.id
+      );
+
+      const next = existing
+        ? current.map((item) =>
+            item.id === product.id
+              ? {
+                  ...item,
+                  quantity: item.quantity + 1,
+                }
+              : item
+          )
+        : [
+            ...current,
+            {
+              ...product,
+              quantity: 1,
+            },
+          ];
+
+      localStorage.setItem(
+        "madhayana_buyer_cart",
+        JSON.stringify(next)
+      );
+
+      return next;
+    });
+
+    showNotice(`${product.name} masuk ke keranjang.`);
+  };
+
+  const updateCartQuantity = (productId, amount) => {
+    setCart((current) => {
+      const next = current
+        .map((item) =>
+          item.id === productId
+            ? {
+                ...item,
+                quantity: Math.max(
+                  0,
+                  item.quantity + amount
+                ),
+              }
+            : item
+        )
+        .filter((item) => item.quantity > 0);
+
+      localStorage.setItem(
+        "madhayana_buyer_cart",
+        JSON.stringify(next)
+      );
+
+      return next;
+    });
+  };
+
+  const removeFromCart = (productId) => {
+    setCart((current) => {
+      const next = current.filter(
+        (item) => item.id !== productId
+      );
+
+      localStorage.setItem(
+        "madhayana_buyer_cart",
+        JSON.stringify(next)
+      );
+
+      return next;
+    });
+
+    showNotice("Produk dihapus dari keranjang.");
   };
 
   const saveProfile = (event) => {
@@ -950,6 +1044,17 @@ function BuyerDashboard({ user, onLogout }) {
                   favorites.length > 0 && (
                     <small>{favorites.length}</small>
                   )}
+
+                {label === "Keranjang" &&
+                  cart.length > 0 && (
+                    <small>
+                      {cart.reduce(
+                        (total, item) =>
+                          total + item.quantity,
+                        0
+                      )}
+                    </small>
+                  )}
               </button>
             ))}
           </nav>
@@ -976,6 +1081,8 @@ function BuyerDashboard({ user, onLogout }) {
               orders={orders}
               showNotice={showNotice}
               search={search}
+              addToCart={addToCart}
+              openDetail={setSelectedProduct}
             />
           )}
 
@@ -993,6 +1100,16 @@ function BuyerDashboard({ user, onLogout }) {
               toggleFavorite={toggleFavorite}
               setActiveMenu={setActiveMenu}
               showNotice={showNotice}
+            />
+          )}
+
+          {activeMenu === "Keranjang" && (
+            <BuyerCart
+              cart={cart}
+              updateQuantity={updateCartQuantity}
+              removeFromCart={removeFromCart}
+              openCheckout={() => setShowCheckout(true)}
+              setActiveMenu={setActiveMenu}
             />
           )}
 
@@ -1020,6 +1137,31 @@ function BuyerDashboard({ user, onLogout }) {
           )}
         </section>
       </div>
+
+      {selectedProduct && (
+        <BuyerProductModal
+          product={selectedProduct}
+          favorite={favorites.includes(
+            selectedProduct.id
+          )}
+          toggleFavorite={toggleFavorite}
+          addToCart={addToCart}
+          onClose={() => setSelectedProduct(null)}
+        />
+      )}
+
+      {showCheckout && (
+        <BuyerCheckoutModal
+          cart={cart}
+          onClose={() => setShowCheckout(false)}
+          onContinue={() => {
+            setShowCheckout(false);
+            showNotice(
+              "Ringkasan checkout berhasil dibuat."
+            );
+          }}
+        />
+      )}
     </main>
   );
 }
@@ -1034,6 +1176,8 @@ function BuyerHome({
   orders,
   showNotice,
   search,
+  addToCart,
+  openDetail,
 }) {
   return (
     <>
@@ -1148,6 +1292,8 @@ function BuyerHome({
                 favorite={favorites.includes(product.id)}
                 toggleFavorite={toggleFavorite}
                 showNotice={showNotice}
+                addToCart={addToCart}
+                openDetail={openDetail}
               />
             ))}
           </div>
@@ -1162,6 +1308,8 @@ function BuyerProductCard({
   favorite,
   toggleFavorite,
   showNotice,
+  addToCart,
+  openDetail,
 }) {
   return (
     <article>
@@ -1198,11 +1346,7 @@ function BuyerProductCard({
 
         <button
           type="button"
-          onClick={() =>
-            showNotice(
-              `${product.name} ditambahkan ke keranjang.`
-            )
-          }
+          onClick={() => addToCart(product)}
           aria-label="Tambahkan ke keranjang"
         >
           <i className="fi fi-rr-shopping-cart-add" />
@@ -1212,15 +1356,363 @@ function BuyerProductCard({
       <button
         type="button"
         className="buyer-detail-button"
-        onClick={() =>
-          showNotice(
-            `Detail ${product.name} akan dibuka.`
-          )
-        }
+        onClick={() => openDetail(product)}
       >
         Lihat Detail
       </button>
     </article>
+  );
+}
+
+
+function parsePrice(price) {
+  return Number(
+    String(price)
+      .replace("Rp", "")
+      .replaceAll(".", "")
+      .replaceAll(" ", "")
+  ) || 0;
+}
+
+function formatRupiah(value) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function BuyerCart({
+  cart,
+  updateQuantity,
+  removeFromCart,
+  openCheckout,
+  setActiveMenu,
+}) {
+  const total = cart.reduce(
+    (sum, item) =>
+      sum + parsePrice(item.price) * item.quantity,
+    0
+  );
+
+  return (
+    <BuyerPageHeader
+      eyebrow="KERANJANG BELANJA"
+      title="Keranjang"
+      description="Periksa produk sebelum melanjutkan ke pembayaran."
+    >
+      {cart.length === 0 ? (
+        <BuyerEmpty
+          icon="fi fi-rr-shopping-cart"
+          title="Keranjang masih kosong"
+          description="Tambahkan produk yang ingin dibeli terlebih dahulu."
+          action="Mulai Belanja"
+          onAction={() => setActiveMenu("Beranda")}
+        />
+      ) : (
+        <div className="buyer-cart-layout">
+          <div className="buyer-cart-list">
+            {cart.map((item) => (
+              <article key={item.id}>
+                <div className="buyer-cart-image">
+                  <i className={item.icon} />
+                </div>
+
+                <div className="buyer-cart-info">
+                  <span>{item.category}</span>
+                  <h3>{item.name}</h3>
+                  <strong>{item.price}</strong>
+                </div>
+
+                <div className="buyer-quantity">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateQuantity(item.id, -1)
+                    }
+                  >
+                    −
+                  </button>
+
+                  <span>{item.quantity}</span>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateQuantity(item.id, 1)
+                    }
+                  >
+                    +
+                  </button>
+                </div>
+
+                <strong className="buyer-cart-subtotal">
+                  {formatRupiah(
+                    parsePrice(item.price) *
+                      item.quantity
+                  )}
+                </strong>
+
+                <button
+                  type="button"
+                  className="buyer-remove-cart"
+                  onClick={() =>
+                    removeFromCart(item.id)
+                  }
+                  aria-label="Hapus produk"
+                >
+                  <i className="fi fi-rr-trash" />
+                </button>
+              </article>
+            ))}
+          </div>
+
+          <aside className="buyer-cart-summary">
+            <h3>Ringkasan Belanja</h3>
+
+            <div>
+              <span>Total produk</span>
+              <strong>
+                {cart.reduce(
+                  (sum, item) =>
+                    sum + item.quantity,
+                  0
+                )}
+              </strong>
+            </div>
+
+            <div>
+              <span>Subtotal</span>
+              <strong>{formatRupiah(total)}</strong>
+            </div>
+
+            <div>
+              <span>Biaya layanan</span>
+              <strong>Rp0</strong>
+            </div>
+
+            <footer>
+              <span>Total pembayaran</span>
+              <strong>{formatRupiah(total)}</strong>
+            </footer>
+
+            <button
+              type="button"
+              className="modern-button primary full"
+              onClick={openCheckout}
+            >
+              Lanjut ke Checkout
+              <i className="fi fi-rr-arrow-right" />
+            </button>
+          </aside>
+        </div>
+      )}
+    </BuyerPageHeader>
+  );
+}
+
+function BuyerProductModal({
+  product,
+  favorite,
+  toggleFavorite,
+  addToCart,
+  onClose,
+}) {
+  return (
+    <div
+      className="modern-modal-backdrop"
+      onMouseDown={onClose}
+    >
+      <article
+        className="buyer-product-modal"
+        onMouseDown={(event) =>
+          event.stopPropagation()
+        }
+      >
+        <button
+          type="button"
+          className="modern-modal-close"
+          onClick={onClose}
+        >
+          <i className="fi fi-rr-cross-small" />
+        </button>
+
+        <div className="buyer-product-modal-image">
+          <i className={product.icon} />
+        </div>
+
+        <div className="buyer-product-modal-content">
+          <span className="modern-eyebrow">
+            {product.category}
+          </span>
+
+          <h2>{product.name}</h2>
+
+          <div className="modern-rating">
+            <i className="fi fi-sr-star" />
+            {product.rating}
+            <small>{product.sold} terjual</small>
+          </div>
+
+          <p>
+            Produk digital pilihan Madhayana Market.
+            Produk dapat digunakan untuk mendukung
+            kebutuhan pekerjaan, bisnis, maupun
+            pembelajaran.
+          </p>
+
+          <ul>
+            <li>Produk digital siap digunakan</li>
+            <li>Invoice pembelian tersedia</li>
+            <li>Dukungan dari seller</li>
+            <li>Akses unduhan setelah pembayaran</li>
+          </ul>
+
+          <strong className="buyer-modal-price">
+            {product.price}
+          </strong>
+
+          <div className="buyer-modal-actions">
+            <button
+              type="button"
+              className="buyer-outline-button"
+              onClick={() =>
+                toggleFavorite(product.id)
+              }
+            >
+              <i
+                className={
+                  favorite
+                    ? "fi fi-sr-heart"
+                    : "fi fi-rr-heart"
+                }
+              />
+              {favorite
+                ? "Hapus Favorit"
+                : "Simpan Favorit"}
+            </button>
+
+            <button
+              type="button"
+              className="modern-button primary"
+              onClick={() => {
+                addToCart(product);
+                onClose();
+              }}
+            >
+              <i className="fi fi-rr-shopping-cart-add" />
+              Tambah Keranjang
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+  );
+}
+
+function BuyerCheckoutModal({
+  cart,
+  onClose,
+  onContinue,
+}) {
+  const total = cart.reduce(
+    (sum, item) =>
+      sum + parsePrice(item.price) * item.quantity,
+    0
+  );
+
+  return (
+    <div
+      className="modern-modal-backdrop"
+      onMouseDown={onClose}
+    >
+      <form
+        className="buyer-checkout-modal"
+        onMouseDown={(event) =>
+          event.stopPropagation()
+        }
+        onSubmit={(event) => {
+          event.preventDefault();
+          onContinue();
+        }}
+      >
+        <button
+          type="button"
+          className="modern-modal-close"
+          onClick={onClose}
+        >
+          <i className="fi fi-rr-cross-small" />
+        </button>
+
+        <div className="modern-modal-icon">
+          <i className="fi fi-rr-credit-card" />
+        </div>
+
+        <h2>Ringkasan Checkout</h2>
+
+        <p>
+          Periksa pesanan sebelum memilih metode
+          pembayaran.
+        </p>
+
+        <div className="buyer-checkout-items">
+          {cart.map((item) => (
+            <div key={item.id}>
+              <span>
+                {item.name} × {item.quantity}
+              </span>
+
+              <strong>
+                {formatRupiah(
+                  parsePrice(item.price) *
+                    item.quantity
+                )}
+              </strong>
+            </div>
+          ))}
+        </div>
+
+        <div className="buyer-checkout-total">
+          <span>Total</span>
+          <strong>{formatRupiah(total)}</strong>
+        </div>
+
+        <label className="modern-field">
+          <span>Metode pembayaran</span>
+
+          <div>
+            <i className="fi fi-rr-credit-card" />
+
+            <select required defaultValue="">
+              <option value="" disabled>
+                Pilih metode pembayaran
+              </option>
+              <option value="qris">QRIS</option>
+              <option value="dana">DANA</option>
+              <option value="bank">
+                Transfer Bank
+              </option>
+              <option value="coin">
+                Madhayana Coin
+              </option>
+            </select>
+          </div>
+        </label>
+
+        <button
+          type="submit"
+          className="modern-button primary full"
+        >
+          Buat Pesanan
+          <i className="fi fi-rr-arrow-right" />
+        </button>
+
+        <small>
+          Tahap berikutnya akan menghubungkan tombol
+          ini ke payment gateway dan Firestore.
+        </small>
+      </form>
+    </div>
   );
 }
 
@@ -1332,8 +1824,10 @@ function BuyerDownloads({ downloads, showNotice }) {
               </span>
             </div>
 
-            <button
-              type="button"
+            <a
+              className="buyer-download-button"
+              href={file.url}
+              download={file.filename}
               onClick={() =>
                 showNotice(
                   `Unduhan ${file.name} dimulai.`
@@ -1342,7 +1836,7 @@ function BuyerDownloads({ downloads, showNotice }) {
             >
               <i className="fi fi-rr-download" />
               Unduh
-            </button>
+            </a>
           </article>
         ))}
       </div>
