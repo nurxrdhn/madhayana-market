@@ -715,39 +715,869 @@ function ModernInput({
   );
 }
 
+
 function Dashboard({ user, onLogout }) {
   const role = user.role || "buyer";
-  const config = dashboardData[role] || dashboardData.buyer;
-  const [activeMenu, setActiveMenu] = useState(config.menus[0][1]);
-  const [guestModal, setGuestModal] = useState(false);
 
-  const firstName = useMemo(
-    () => user.name?.split(" ")[0] || "Pengguna",
-    [user.name]
-  );
+  if (role === "buyer") {
+    return <BuyerDashboard user={user} onLogout={onLogout} />;
+  }
 
   return (
-    <main className={`modern-dashboard dashboard-${role}`}>
+    <RoleDashboard
+      role={role}
+      user={user}
+      onLogout={onLogout}
+    />
+  );
+}
+
+function BuyerDashboard({ user, onLogout }) {
+  const menuItems = [
+    ["fi fi-rr-home", "Beranda"],
+    ["fi fi-rr-box", "Pesanan"],
+    ["fi fi-rr-heart", "Favorit"],
+    ["fi fi-rr-download", "Unduhan"],
+    ["fi fi-rr-coins", "Koin"],
+    ["fi fi-rr-user", "Profil"],
+  ];
+
+  const [activeMenu, setActiveMenu] = useState("Beranda");
+  const [search, setSearch] = useState("");
+  const [notice, setNotice] = useState("");
+  const [coin, setCoin] = useState(Number(user.coin || 1250));
+
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("madhayana_buyer_favorites")
+      ) || [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [profileForm, setProfileForm] = useState({
+    name: user.name || "",
+    email: user.email || "",
+    phone: user.phone || "",
+  });
+
+  const buyerProducts = products.map((product, index) => ({
+    ...product,
+    id: `product-${index + 1}`,
+    rating: "4,9",
+    sold: [128, 92, 64, 207][index],
+  }));
+
+  const orders = [
+    {
+      id: "ORD-2026-00182",
+      product: "Premium React Dashboard",
+      date: "13 Juli 2026",
+      total: "Rp150.000",
+      status: "Selesai",
+    },
+    {
+      id: "ORD-2026-00156",
+      product: "Lisensi Aplikasi Kasir",
+      date: "10 Juli 2026",
+      total: "Rp490.000",
+      status: "Diproses",
+    },
+    {
+      id: "ORD-2026-00131",
+      product: "Kursus Digital Marketing",
+      date: "7 Juli 2026",
+      total: "Rp119.000",
+      status: "Menunggu pembayaran",
+    },
+  ];
+
+  const downloads = [
+    {
+      id: "download-1",
+      name: "Premium React Dashboard",
+      type: "ZIP",
+      size: "18,4 MB",
+      icon: "fi fi-rr-layout-fluid",
+    },
+    {
+      id: "download-2",
+      name: "Invoice ORD-2026-00182",
+      type: "PDF",
+      size: "320 KB",
+      icon: "fi fi-rr-file-invoice",
+    },
+  ];
+
+  const filteredProducts = buyerProducts.filter((product) => {
+    const keyword = search.trim().toLowerCase();
+
+    if (!keyword) return true;
+
+    return (
+      product.name.toLowerCase().includes(keyword) ||
+      product.category.toLowerCase().includes(keyword)
+    );
+  });
+
+  const favoriteProducts = buyerProducts.filter((product) =>
+    favorites.includes(product.id)
+  );
+
+  const firstName =
+    profileForm.name?.trim().split(" ")[0] || "Buyer";
+
+  const showNotice = (message) => {
+    setNotice(message);
+
+    window.setTimeout(() => {
+      setNotice("");
+    }, 2800);
+  };
+
+  const toggleFavorite = (productId) => {
+    setFavorites((current) => {
+      const next = current.includes(productId)
+        ? current.filter((id) => id !== productId)
+        : [...current, productId];
+
+      localStorage.setItem(
+        "madhayana_buyer_favorites",
+        JSON.stringify(next)
+      );
+
+      return next;
+    });
+  };
+
+  const saveProfile = (event) => {
+    event.preventDefault();
+
+    localStorage.setItem(
+      "madhayana_buyer_profile",
+      JSON.stringify(profileForm)
+    );
+
+    showNotice("Perubahan profil berhasil disimpan.");
+  };
+
+  const addCoin = (amount) => {
+    setCoin((current) => current + amount);
+    showNotice(`${amount.toLocaleString("id-ID")} koin berhasil ditambahkan.`);
+  };
+
+  return (
+    <main className="modern-dashboard dashboard-buyer">
+      {notice && (
+        <div className="buyer-toast">
+          <i className="fi fi-rr-check-circle" />
+          {notice}
+        </div>
+      )}
+
       <header className="modern-dashboard-header">
         <Brand />
 
         <div className="modern-dashboard-search">
           <i className="fi fi-rr-search" />
-          <input placeholder="Cari produk, software, jasa, atau kursus..." />
+
+          <input
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value);
+
+              if (activeMenu !== "Beranda") {
+                setActiveMenu("Beranda");
+              }
+            }}
+            placeholder="Cari produk, software, jasa, atau kursus..."
+          />
         </div>
 
         <div className="modern-dashboard-actions">
-          <button>
+          <button
+            type="button"
+            onClick={() =>
+              showNotice("Belum ada notifikasi baru.")
+            }
+          >
             <i className="fi fi-rr-bell" />
           </button>
+
           <div className="modern-profile">
             <div className="modern-avatar">
               {user.photoURL ? (
-                <img src={user.photoURL} alt={user.name} />
+                <img
+                  src={user.photoURL}
+                  alt={profileForm.name}
+                />
               ) : (
                 firstName.charAt(0).toUpperCase()
               )}
             </div>
+
+            <div>
+              <strong>{profileForm.name || "Buyer"}</strong>
+              <span>Buyer</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="modern-dashboard-layout">
+        <aside className="modern-sidebar">
+          <div className="modern-role-badge">
+            <i className="fi fi-rr-shopping-bag" />
+            <span>Buyer</span>
+          </div>
+
+          <nav>
+            {menuItems.map(([icon, label]) => (
+              <button
+                type="button"
+                key={label}
+                className={
+                  activeMenu === label ? "active" : ""
+                }
+                onClick={() => setActiveMenu(label)}
+              >
+                <i className={icon} />
+                {label}
+
+                {label === "Favorit" &&
+                  favorites.length > 0 && (
+                    <small>{favorites.length}</small>
+                  )}
+              </button>
+            ))}
+          </nav>
+
+          <button
+            type="button"
+            className="modern-logout"
+            onClick={onLogout}
+          >
+            <i className="fi fi-rr-sign-out-alt" />
+            Keluar
+          </button>
+        </aside>
+
+        <section className="modern-main-content">
+          {activeMenu === "Beranda" && (
+            <BuyerHome
+              firstName={firstName}
+              products={filteredProducts}
+              favorites={favorites}
+              toggleFavorite={toggleFavorite}
+              setActiveMenu={setActiveMenu}
+              coin={coin}
+              orders={orders}
+              showNotice={showNotice}
+              search={search}
+            />
+          )}
+
+          {activeMenu === "Pesanan" && (
+            <BuyerOrders
+              orders={orders}
+              showNotice={showNotice}
+            />
+          )}
+
+          {activeMenu === "Favorit" && (
+            <BuyerFavorites
+              products={favoriteProducts}
+              favorites={favorites}
+              toggleFavorite={toggleFavorite}
+              setActiveMenu={setActiveMenu}
+              showNotice={showNotice}
+            />
+          )}
+
+          {activeMenu === "Unduhan" && (
+            <BuyerDownloads
+              downloads={downloads}
+              showNotice={showNotice}
+            />
+          )}
+
+          {activeMenu === "Koin" && (
+            <BuyerCoins
+              coin={coin}
+              addCoin={addCoin}
+            />
+          )}
+
+          {activeMenu === "Profil" && (
+            <BuyerProfile
+              form={profileForm}
+              setForm={setProfileForm}
+              saveProfile={saveProfile}
+              user={user}
+            />
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function BuyerHome({
+  firstName,
+  products,
+  favorites,
+  toggleFavorite,
+  setActiveMenu,
+  coin,
+  orders,
+  showNotice,
+  search,
+}) {
+  return (
+    <>
+      <div className="modern-dashboard-hero">
+        <div>
+          <span className="modern-eyebrow">
+            BUYER DASHBOARD
+          </span>
+
+          <h1>
+            Halo, {firstName}
+            <span>!</span>
+          </h1>
+
+          <p>
+            Temukan produk digital terbaik dan kelola
+            seluruh pembelianmu dari satu tempat.
+          </p>
+
+          <button
+            type="button"
+            className="modern-button light"
+            onClick={() => {
+              document
+                .getElementById("buyer-products")
+                ?.scrollIntoView({
+                  behavior: "smooth",
+                });
+            }}
+          >
+            <i className="fi fi-rr-shopping-bag" />
+            Mulai Belanja
+          </button>
+        </div>
+
+        <div className="modern-dashboard-hero-icon">
+          <i className="fi fi-rr-shopping-bag" />
+        </div>
+      </div>
+
+      <div className="modern-stats">
+        <article
+          className="buyer-clickable-stat"
+          onClick={() => setActiveMenu("Pesanan")}
+        >
+          <div>
+            <i className="fi fi-rr-box" />
+          </div>
+          <span>Pesanan aktif</span>
+          <strong>{orders.length}</strong>
+        </article>
+
+        <article
+          className="buyer-clickable-stat"
+          onClick={() => setActiveMenu("Koin")}
+        >
+          <div>
+            <i className="fi fi-rr-coins" />
+          </div>
+          <span>Madhayana Coin</span>
+          <strong>
+            {coin.toLocaleString("id-ID")}
+          </strong>
+        </article>
+
+        <article
+          className="buyer-clickable-stat"
+          onClick={() => setActiveMenu("Favorit")}
+        >
+          <div>
+            <i className="fi fi-rr-heart" />
+          </div>
+          <span>Produk favorit</span>
+          <strong>{favorites.length}</strong>
+        </article>
+      </div>
+
+      <section
+        className="modern-product-section"
+        id="buyer-products"
+      >
+        <div className="modern-section-header">
+          <div>
+            <span className="modern-eyebrow">
+              PILIHAN POPULER
+            </span>
+
+            <h2>
+              {search
+                ? `Hasil pencarian "${search}"`
+                : "Rekomendasi untukmu"}
+            </h2>
+          </div>
+
+          <span className="buyer-result-count">
+            {products.length} produk
+          </span>
+        </div>
+
+        {products.length === 0 ? (
+          <BuyerEmpty
+            icon="fi fi-rr-search"
+            title="Produk tidak ditemukan"
+            description="Coba gunakan kata pencarian yang berbeda."
+          />
+        ) : (
+          <div className="modern-products">
+            {products.map((product) => (
+              <BuyerProductCard
+                key={product.id}
+                product={product}
+                favorite={favorites.includes(product.id)}
+                toggleFavorite={toggleFavorite}
+                showNotice={showNotice}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+    </>
+  );
+}
+
+function BuyerProductCard({
+  product,
+  favorite,
+  toggleFavorite,
+  showNotice,
+}) {
+  return (
+    <article>
+      <div className="modern-product-image">
+        <i className={product.icon} />
+
+        <button
+          type="button"
+          className={favorite ? "is-favorite" : ""}
+          onClick={() => toggleFavorite(product.id)}
+          aria-label="Tambahkan ke favorit"
+        >
+          <i
+            className={
+              favorite
+                ? "fi fi-sr-heart"
+                : "fi fi-rr-heart"
+            }
+          />
+        </button>
+      </div>
+
+      <span>{product.category}</span>
+      <h3>{product.name}</h3>
+
+      <div className="modern-rating">
+        <i className="fi fi-sr-star" />
+        {product.rating}
+        <small>{product.sold} terjual</small>
+      </div>
+
+      <footer>
+        <strong>{product.price}</strong>
+
+        <button
+          type="button"
+          onClick={() =>
+            showNotice(
+              `${product.name} ditambahkan ke keranjang.`
+            )
+          }
+          aria-label="Tambahkan ke keranjang"
+        >
+          <i className="fi fi-rr-shopping-cart-add" />
+        </button>
+      </footer>
+
+      <button
+        type="button"
+        className="buyer-detail-button"
+        onClick={() =>
+          showNotice(
+            `Detail ${product.name} akan dibuka.`
+          )
+        }
+      >
+        Lihat Detail
+      </button>
+    </article>
+  );
+}
+
+function BuyerOrders({ orders, showNotice }) {
+  return (
+    <BuyerPageHeader
+      eyebrow="AKTIVITAS TRANSAKSI"
+      title="Pesanan Saya"
+      description="Pantau status pembayaran dan proses pesananmu."
+    >
+      <div className="buyer-order-list">
+        {orders.map((order) => (
+          <article key={order.id}>
+            <div className="buyer-order-icon">
+              <i className="fi fi-rr-box" />
+            </div>
+
+            <div className="buyer-order-main">
+              <small>{order.id}</small>
+              <h3>{order.product}</h3>
+              <span>{order.date}</span>
+            </div>
+
+            <div className="buyer-order-price">
+              <strong>{order.total}</strong>
+              <span
+                className={`buyer-status status-${order.status
+                  .toLowerCase()
+                  .replaceAll(" ", "-")}`}
+              >
+                {order.status}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className="buyer-outline-button"
+              onClick={() =>
+                showNotice(
+                  `Detail pesanan ${order.id} dibuka.`
+                )
+              }
+            >
+              Detail
+            </button>
+          </article>
+        ))}
+      </div>
+    </BuyerPageHeader>
+  );
+}
+
+function BuyerFavorites({
+  products,
+  favorites,
+  toggleFavorite,
+  setActiveMenu,
+  showNotice,
+}) {
+  return (
+    <BuyerPageHeader
+      eyebrow="PRODUK TERSIMPAN"
+      title="Favorit"
+      description="Produk yang kamu tandai akan tersimpan di halaman ini."
+    >
+      {products.length === 0 ? (
+        <BuyerEmpty
+          icon="fi fi-rr-heart"
+          title="Belum ada produk favorit"
+          description="Tekan ikon hati pada produk yang ingin disimpan."
+          action="Cari Produk"
+          onAction={() => setActiveMenu("Beranda")}
+        />
+      ) : (
+        <div className="modern-products">
+          {products.map((product) => (
+            <BuyerProductCard
+              key={product.id}
+              product={product}
+              favorite={favorites.includes(product.id)}
+              toggleFavorite={toggleFavorite}
+              showNotice={showNotice}
+            />
+          ))}
+        </div>
+      )}
+    </BuyerPageHeader>
+  );
+}
+
+function BuyerDownloads({ downloads, showNotice }) {
+  return (
+    <BuyerPageHeader
+      eyebrow="PRODUK DIGITAL"
+      title="Unduhan"
+      description="Akses file produk yang sudah selesai dibeli."
+    >
+      <div className="buyer-download-grid">
+        {downloads.map((file) => (
+          <article key={file.id}>
+            <div className="buyer-file-icon">
+              <i className={file.icon} />
+            </div>
+
+            <div>
+              <h3>{file.name}</h3>
+              <span>
+                {file.type} • {file.size}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                showNotice(
+                  `Unduhan ${file.name} dimulai.`
+                )
+              }
+            >
+              <i className="fi fi-rr-download" />
+              Unduh
+            </button>
+          </article>
+        ))}
+      </div>
+    </BuyerPageHeader>
+  );
+}
+
+function BuyerCoins({ coin, addCoin }) {
+  const packages = [
+    {
+      coin: 100,
+      price: "Rp10.000",
+    },
+    {
+      coin: 500,
+      price: "Rp48.000",
+    },
+    {
+      coin: 1000,
+      price: "Rp95.000",
+    },
+  ];
+
+  return (
+    <BuyerPageHeader
+      eyebrow="MADHAYANA REWARDS"
+      title="Koin dan Membership"
+      description="Gunakan koin untuk mendapatkan keuntungan dan potongan transaksi."
+    >
+      <div className="buyer-coin-balance">
+        <div>
+          <i className="fi fi-rr-coins" />
+        </div>
+
+        <span>Saldo koin saat ini</span>
+        <strong>
+          {coin.toLocaleString("id-ID")}
+        </strong>
+        <small>Gold Member</small>
+      </div>
+
+      <h2 className="buyer-subheading">
+        Pilih paket top up
+      </h2>
+
+      <div className="buyer-coin-packages">
+        {packages.map((item) => (
+          <article key={item.coin}>
+            <i className="fi fi-rr-coins" />
+            <strong>
+              {item.coin.toLocaleString("id-ID")} Koin
+            </strong>
+            <span>{item.price}</span>
+
+            <button
+              type="button"
+              className="modern-button primary"
+              onClick={() => addCoin(item.coin)}
+            >
+              Pilih Paket
+            </button>
+          </article>
+        ))}
+      </div>
+    </BuyerPageHeader>
+  );
+}
+
+function BuyerProfile({
+  form,
+  setForm,
+  saveProfile,
+  user,
+}) {
+  const update = (event) => {
+    setForm((current) => ({
+      ...current,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  return (
+    <BuyerPageHeader
+      eyebrow="PENGATURAN AKUN"
+      title="Profil Saya"
+      description="Kelola informasi yang digunakan pada transaksi."
+    >
+      <form
+        className="buyer-profile-form"
+        onSubmit={saveProfile}
+      >
+        <div className="buyer-profile-avatar">
+          {user.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt={form.name}
+            />
+          ) : (
+            form.name?.charAt(0)?.toUpperCase() || "B"
+          )}
+        </div>
+
+        <div className="buyer-profile-fields">
+          <ModernInput
+            icon="fi fi-rr-user"
+            label="Nama lengkap"
+            name="name"
+            value={form.name}
+            onChange={update}
+            placeholder="Masukkan nama lengkap"
+          />
+
+          <ModernInput
+            icon="fi fi-rr-envelope"
+            label="Email"
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={update}
+            placeholder="nama@gmail.com"
+          />
+
+          <ModernInput
+            icon="fi fi-rr-phone-call"
+            label="Nomor WhatsApp"
+            name="phone"
+            value={form.phone}
+            onChange={update}
+            placeholder="08xxxxxxxxxx"
+          />
+
+          <button
+            type="submit"
+            className="modern-button primary"
+          >
+            <i className="fi fi-rr-disk" />
+            Simpan Perubahan
+          </button>
+        </div>
+      </form>
+    </BuyerPageHeader>
+  );
+}
+
+function BuyerPageHeader({
+  eyebrow,
+  title,
+  description,
+  children,
+}) {
+  return (
+    <section className="buyer-page">
+      <header className="buyer-page-heading">
+        <span className="modern-eyebrow">
+          {eyebrow}
+        </span>
+        <h1>{title}</h1>
+        <p>{description}</p>
+      </header>
+
+      <div className="buyer-page-content">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function BuyerEmpty({
+  icon,
+  title,
+  description,
+  action,
+  onAction,
+}) {
+  return (
+    <div className="buyer-empty">
+      <div>
+        <i className={icon} />
+      </div>
+      <h3>{title}</h3>
+      <p>{description}</p>
+
+      {action && (
+        <button
+          type="button"
+          className="modern-button primary"
+          onClick={onAction}
+        >
+          {action}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function RoleDashboard({ role, user, onLogout }) {
+  const config =
+    dashboardData[role] || dashboardData.guest;
+
+  const [activeMenu, setActiveMenu] = useState(
+    config.menus[0][1]
+  );
+
+  const firstName =
+    user.name?.trim().split(" ")[0] || "Pengguna";
+
+  return (
+    <main
+      className={`modern-dashboard dashboard-${role}`}
+    >
+      <header className="modern-dashboard-header">
+        <Brand />
+
+        <div className="modern-dashboard-search">
+          <i className="fi fi-rr-search" />
+          <input placeholder="Cari di dashboard..." />
+        </div>
+
+        <div className="modern-dashboard-actions">
+          <button type="button">
+            <i className="fi fi-rr-bell" />
+          </button>
+
+          <div className="modern-profile">
+            <div className="modern-avatar">
+              {user.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt={user.name}
+                />
+              ) : (
+                firstName.charAt(0).toUpperCase()
+              )}
+            </div>
+
             <div>
               <strong>{user.name}</strong>
               <span>{role}</span>
@@ -766,8 +1596,11 @@ function Dashboard({ user, onLogout }) {
           <nav>
             {config.menus.map(([icon, label]) => (
               <button
+                type="button"
                 key={label}
-                className={activeMenu === label ? "active" : ""}
+                className={
+                  activeMenu === label ? "active" : ""
+                }
                 onClick={() => setActiveMenu(label)}
               >
                 <i className={icon} />
@@ -776,7 +1609,11 @@ function Dashboard({ user, onLogout }) {
             ))}
           </nav>
 
-          <button className="modern-logout" onClick={onLogout}>
+          <button
+            type="button"
+            className="modern-logout"
+            onClick={onLogout}
+          >
             <i className="fi fi-rr-sign-out-alt" />
             Keluar
           </button>
@@ -785,34 +1622,14 @@ function Dashboard({ user, onLogout }) {
         <section className="modern-main-content">
           <div className="modern-dashboard-hero">
             <div>
-              <span className="modern-eyebrow">{activeMenu}</span>
+              <span className="modern-eyebrow">
+                {activeMenu}
+              </span>
               <h1>
                 Halo, {firstName}
                 <span>!</span>
               </h1>
               <p>{config.subtitle}</p>
-
-              <button
-                className="modern-button light"
-                onClick={() => role === "guest" && setGuestModal(true)}
-              >
-                <i
-                  className={
-                    role === "reseller"
-                      ? "fi fi-rr-add"
-                      : role === "operator"
-                        ? "fi fi-rr-dashboard-monitor"
-                        : "fi fi-rr-shopping-bag"
-                  }
-                />
-                {role === "reseller"
-                  ? "Tambah Produk"
-                  : role === "operator"
-                    ? "Buka Monitoring"
-                    : role === "guest"
-                      ? "Daftar untuk Bertransaksi"
-                      : "Mulai Belanja"}
-              </button>
             </div>
 
             <div className="modern-dashboard-hero-icon">
@@ -835,58 +1652,21 @@ function Dashboard({ user, onLogout }) {
           <section className="modern-product-section">
             <div className="modern-section-header">
               <div>
-                <span className="modern-eyebrow">PILIHAN POPULER</span>
-                <h2>Rekomendasi untukmu</h2>
+                <span className="modern-eyebrow">
+                  DASHBOARD {role.toUpperCase()}
+                </span>
+                <h2>{activeMenu}</h2>
               </div>
-              <button className="modern-text-button">
-                Lihat semua
-                <i className="fi fi-rr-arrow-right" />
-              </button>
             </div>
 
-            <div className="modern-products">
-              {products.map((product) => (
-                <article key={product.name}>
-                  <div className="modern-product-image">
-                    <i className={product.icon} />
-                    <button>
-                      <i className="fi fi-rr-heart" />
-                    </button>
-                  </div>
-
-                  <span>{product.category}</span>
-                  <h3>{product.name}</h3>
-
-                  <div className="modern-rating">
-                    <i className="fi fi-sr-star" />
-                    4,9
-                    <small>128 terjual</small>
-                  </div>
-
-                  <footer>
-                    <strong>{product.price}</strong>
-                    <button
-                      onClick={() => role === "guest" && setGuestModal(true)}
-                    >
-                      <i className="fi fi-rr-shopping-cart-add" />
-                    </button>
-                  </footer>
-                </article>
-              ))}
-            </div>
+            <BuyerEmpty
+              icon={config.icon}
+              title={`Modul ${activeMenu}`}
+              description="Modul ini akan diaktifkan pada tahap berikutnya."
+            />
           </section>
         </section>
       </div>
-
-      {guestModal && (
-        <GuestModal
-          onClose={() => setGuestModal(false)}
-          onRegister={() => {
-            setGuestModal(false);
-            onLogout();
-          }}
-        />
-      )}
     </main>
   );
 }
