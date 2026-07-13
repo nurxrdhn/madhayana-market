@@ -4,6 +4,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import "@flaticon/flaticon-uicons/css/all/all.css";
 import "./styles/globals.css";
+import useProducts from "./hooks/useProducts";
 
 const slides = [
   {
@@ -777,12 +778,45 @@ function BuyerDashboard({ user, onLogout }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showCheckout, setShowCheckout] = useState(false);
 
-  const buyerProducts = products.map((product, index) => ({
+  const {
+    products: firestoreProducts,
+    productsLoading,
+    productsError,
+  } = useProducts();
+
+  const staticProducts = products.map((product, index) => ({
     ...product,
-    id: `product-${index + 1}`,
-    rating: "4,9",
+    id: `demo-product-${index + 1}`,
+    numericPrice: Number(
+      String(product.price)
+        .replace("Rp", "")
+        .replaceAll(".", "")
+        .replaceAll(" ", "")
+    ),
+    rating: 4.9,
     sold: [128, 92, 64, 207][index],
+    isDemo: true,
   }));
+
+  const buyerProducts =
+    firestoreProducts.length > 0
+      ? firestoreProducts.map((product) => ({
+          ...product,
+          price:
+            typeof product.price === "number"
+              ? formatRupiah(product.price)
+              : product.price,
+          numericPrice:
+            typeof product.price === "number"
+              ? product.price
+              : parsePrice(product.price),
+          rating: Number(product.rating || 0),
+          sold: Number(product.sold || 0),
+          icon:
+            product.icon ||
+            "fi fi-rr-box-open",
+        }))
+      : staticProducts;
 
   const orders = [
     {
@@ -1083,6 +1117,8 @@ function BuyerDashboard({ user, onLogout }) {
               search={search}
               addToCart={addToCart}
               openDetail={setSelectedProduct}
+              productsLoading={productsLoading}
+              productsError={productsError}
             />
           )}
 
@@ -1178,6 +1214,8 @@ function BuyerHome({
   search,
   addToCart,
   openDetail,
+  productsLoading,
+  productsError,
 }) {
   return (
     <>
@@ -1277,7 +1315,18 @@ function BuyerHome({
           </span>
         </div>
 
-        {products.length === 0 ? (
+        {productsLoading ? (
+          <div className="buyer-products-loading">
+            <div className="buyer-loading-spinner" />
+            <strong>Memuat produk...</strong>
+          </div>
+        ) : productsError ? (
+          <BuyerEmpty
+            icon="fi fi-rr-exclamation"
+            title="Produk gagal dimuat"
+            description={productsError}
+          />
+        ) : products.length === 0 ? (
           <BuyerEmpty
             icon="fi fi-rr-search"
             title="Produk tidak ditemukan"
