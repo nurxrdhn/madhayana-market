@@ -17,8 +17,7 @@ const productsCollection = collection(db, "products");
 export function subscribeActiveProducts(onSuccess, onError) {
   const productsQuery = query(
     productsCollection,
-    where("status", "==", "active"),
-    orderBy("createdAt", "desc")
+    where("status", "==", "active")
   );
 
   return onSnapshot(
