@@ -140,6 +140,12 @@ export default function ExcelReceiptStudio({
   user,
   onBack,
 }) {
+  const sellerId =
+    user?.uid ||
+    user?.id ||
+    user?.userCode ||
+    user?.email ||
+    "";
   const receiptRef = useRef(null);
 
   const [fileName, setFileName] = useState("");
@@ -371,12 +377,6 @@ export default function ExcelReceiptStudio({
   }
 
   function refreshSavedTemplates() {
-    const sellerId =
-      user?.uid ||
-      user?.id ||
-      user?.userCode ||
-      user?.email;
-
     setSavedTemplates(
       sellerId
         ? getReceiptTemplates(sellerId)
@@ -396,21 +396,15 @@ export default function ExcelReceiptStudio({
       setError("");
       setManagerMessage("");
 
-      if (!templateData || !computedData) {
+      if (!sellerId) {
         throw new Error(
-          "Upload dan baca template Excel terlebih dahulu."
+          "Identitas reseller tidak ditemukan. Silakan keluar lalu login kembali."
         );
       }
 
-      const sellerId =
-        user?.uid ||
-        user?.id ||
-        user?.userCode ||
-        user?.email;
-
-      if (!sellerId) {
+      if (!computedData) {
         throw new Error(
-          "Identitas akun reseller tidak ditemukan. Silakan keluar lalu login kembali."
+          "Upload template Excel terlebih dahulu."
         );
       }
 
@@ -426,17 +420,35 @@ export default function ExcelReceiptStudio({
           user?.name ||
           user?.displayName ||
           "Reseller",
-        templateName,
+        templateName: templateName.trim(),
         fileName,
         data: computedData,
-        fields: fieldDefinitions,
-        templateCells: templateCells.slice(0, 100),
+
+        // Hanya menyimpan definisi field penting.
+        fields: Object.fromEntries(
+          Object.entries(fieldDefinitions).map(
+            ([key, field]) => [
+              key,
+              {
+                key: field.key,
+                label: field.label,
+                dataType: field.dataType,
+                source: field.source,
+                required: field.required,
+                sellerEditable:
+                  field.sellerEditable,
+              },
+            ]
+          )
+        ),
+
+        // Layout mentah Excel tidak perlu disimpan
+        // karena preview memakai HTML/CSS.
+        templateCells: [],
       });
 
       setSelectedTemplateId(saved.id);
-      setSavedTemplates(
-        getReceiptTemplates(sellerId)
-      );
+      refreshSavedTemplates();
 
       setManagerMessage(
         "Template berhasil disimpan."
@@ -447,9 +459,17 @@ export default function ExcelReceiptStudio({
         saveError
       );
 
+      const quotaError =
+        saveError?.name === "QuotaExceededError" ||
+        String(saveError?.message || "")
+          .toLowerCase()
+          .includes("quota");
+
       setError(
-        saveError?.message ||
-          "Template gagal disimpan."
+        quotaError
+          ? "Penyimpanan browser penuh. Hapus template lama lalu coba kembali."
+          : saveError?.message ||
+              "Template gagal disimpan."
       );
     }
   }
@@ -479,7 +499,7 @@ export default function ExcelReceiptStudio({
 
     try {
       renameReceiptTemplate({
-        sellerId: user?.uid,
+        sellerId,
         templateId: template.id,
         templateName: newName,
       });
@@ -495,7 +515,7 @@ export default function ExcelReceiptStudio({
 
   function makeDefaultTemplate(template) {
     setDefaultReceiptTemplate({
-      sellerId: user?.uid,
+      sellerId,
       templateId: template.id,
     });
 
@@ -516,7 +536,7 @@ export default function ExcelReceiptStudio({
     }
 
     deleteReceiptTemplate({
-      sellerId: user?.uid,
+      sellerId,
       templateId: template.id,
     });
 

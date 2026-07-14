@@ -1,4 +1,4 @@
-const STORAGE_KEY = "madhayana_receipt_templates_v1";
+const STORAGE_KEY = "madhayana_receipt_templates_v2";
 
 function readTemplates() {
   try {
