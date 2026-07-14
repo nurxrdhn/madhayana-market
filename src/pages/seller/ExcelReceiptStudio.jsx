@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { QRCodeSVG } from "qrcode.react";
+import TemplateManager from "./template/TemplateManager";
 
 import {
   deleteReceiptTemplate,
@@ -10,6 +11,7 @@ import {
   renameReceiptTemplate,
   saveReceiptTemplate,
   setDefaultReceiptTemplate,
+  updateReceiptTemplateCategory,
 } from "../../services/receiptTemplateService";
 
 const REQUIRED_SHEETS = [
@@ -526,6 +528,32 @@ export default function ExcelReceiptStudio({
     );
   }
 
+  function changeTemplateCategory(
+    template,
+    category
+  ) {
+    try {
+      setError("");
+
+      updateReceiptTemplateCategory({
+        sellerId,
+        templateId: template.id,
+        category,
+      });
+
+      refreshSavedTemplates();
+
+      setManagerMessage(
+        `Kategori diubah menjadi ${category}.`
+      );
+    } catch (categoryError) {
+      setError(
+        categoryError?.message ||
+          "Kategori template gagal diubah."
+      );
+    }
+  }
+
   function removeTemplate(template) {
     const confirmed = window.confirm(
       `Hapus template "${template.templateName}"?`
@@ -892,6 +920,18 @@ export default function ExcelReceiptStudio({
               </div>
             </section>
           )}
+
+          <TemplateManager
+            templates={savedTemplates}
+            selectedTemplateId={selectedTemplateId}
+            onPreview={openSavedTemplate}
+            onRename={renameTemplate}
+            onSetDefault={makeDefaultTemplate}
+            onDelete={removeTemplate}
+            onChangeCategory={
+              changeTemplateCategory
+            }
+          />
 
           {templateData && editableFields.length > 0 && (
             <section className="excel-panel-card">

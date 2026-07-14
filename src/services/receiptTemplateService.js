@@ -62,6 +62,7 @@ export function saveReceiptTemplate({
     sellerName: sellerName || "Reseller",
     templateName: templateName.trim(),
     fileName,
+    category: "Struk",
     data,
     fields,
     templateCells,
@@ -159,4 +160,33 @@ export function getDefaultReceiptTemplate(sellerId) {
       (template) => template.isDefault
     ) || null
   );
+}
+
+export function updateReceiptTemplateCategory({
+  sellerId,
+  templateId,
+  category,
+}) {
+  const allowedCategories = [
+    "Struk",
+    "Invoice",
+    "Sertifikat",
+  ];
+
+  if (!allowedCategories.includes(category)) {
+    throw new Error("Kategori template tidak valid.");
+  }
+
+  const templates = readTemplates().map((template) =>
+    template.id === templateId &&
+    template.sellerId === sellerId
+      ? {
+          ...template,
+          category,
+          updatedAt: new Date().toISOString(),
+        }
+      : template
+  );
+
+  writeTemplates(templates);
 }
