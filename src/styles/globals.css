@@ -4672,3 +4672,66 @@ h3,
     padding: 19px 15px;
   }
 }
+
+.seller-store-id-card {
+  position: relative;
+  padding-right: 64px;
+}
+
+.seller-store-copy-id {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 39px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  color: #175cff;
+  background: #eaf0ff;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.seller-store-copy-id:hover {
+  background: #dce7ff;
+  transform:
+    translateY(-50%)
+    scale(1.05);
+}
+
+.store-id-input {
+  padding-right: 7px;
+}
+
+.store-id-input button {
+  width: 37px;
+  height: 37px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 37px;
+  border: 0;
+  border-radius: 10px;
+  color: #175cff;
+  background: #e4ebf8;
+  cursor: pointer;
+}
+
+.buyer-store-public-id {
+  width: fit-content;
+  margin-bottom: 8px;
+  padding: 6px 9px;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  color: #175cff !important;
+  background: #eaf0ff;
+  font-size: 9px !important;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}

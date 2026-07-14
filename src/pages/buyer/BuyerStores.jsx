@@ -60,24 +60,29 @@ export default function BuyerStores({
   }, []);
 
   const filteredStores = useMemo(() => {
-    const keyword =
-      search.trim().toLowerCase();
+    const keyword = search
+      .trim()
+      .toLowerCase();
+
+    if (!keyword) {
+      return stores;
+    }
 
     return stores.filter((store) => {
-      if (!keyword) {
-        return true;
-      }
-
-      return [
+      const searchableValues = [
         store.storeId,
         store.name,
         store.ownerName,
         store.email,
         store.address,
-      ].some((value) =>
-        String(value || "")
-          .toLowerCase()
-          .includes(keyword)
+      ];
+
+      return searchableValues.some(
+        (value) =>
+          String(value || "")
+            .trim()
+            .toLowerCase()
+            .includes(keyword)
       );
     });
   }, [stores, search]);
@@ -121,7 +126,7 @@ export default function BuyerStores({
             onChange={(event) =>
               setSearch(event.target.value)
             }
-            placeholder="Cari nama toko atau reseller..."
+            placeholder="Cari ID toko, nama toko, atau reseller..."
           />
         </label>
       </header>
@@ -176,6 +181,11 @@ export default function BuyerStores({
               </div>
 
               <div className="buyer-store-info">
+                <span className="buyer-store-public-id">
+                  <i className="fi fi-rr-fingerprint" />
+                  {store.storeId}
+                </span>
+
                 <h3>{store.name}</h3>
                 <p>{store.ownerName}</p>
 

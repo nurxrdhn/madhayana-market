@@ -56,6 +56,28 @@ export default function StoreProfileEditor({
     }));
   }
 
+  async function copyStoreId() {
+    try {
+      await navigator.clipboard.writeText(
+        form.storeId
+      );
+
+      setError("");
+      setMessage(
+        `ID toko ${form.storeId} berhasil disalin.`
+      );
+    } catch (copyError) {
+      console.error(
+        "ID toko gagal disalin:",
+        copyError
+      );
+
+      setError(
+        "ID toko gagal disalin. Silakan salin secara manual."
+      );
+    }
+  }
+
   async function saveProfile(event) {
     event.preventDefault();
 
@@ -133,6 +155,15 @@ export default function StoreProfileEditor({
             <small>ID Toko</small>
             <strong>{form.storeId}</strong>
           </span>
+
+          <button
+            type="button"
+            className="seller-store-copy-id"
+            onClick={copyStoreId}
+            title="Salin ID toko"
+          >
+            <i className="fi fi-rr-copy" />
+          </button>
         </div>
       </header>
 
@@ -209,13 +240,21 @@ export default function StoreProfileEditor({
             <label>
               <span>ID Toko</span>
 
-              <div className="store-input readonly">
+              <div className="store-input readonly store-id-input">
                 <i className="fi fi-rr-fingerprint" />
 
                 <input
                   value={form.storeId}
                   readOnly
                 />
+
+                <button
+                  type="button"
+                  onClick={copyStoreId}
+                  title="Salin ID toko"
+                >
+                  <i className="fi fi-rr-copy" />
+                </button>
               </div>
 
               <small>
