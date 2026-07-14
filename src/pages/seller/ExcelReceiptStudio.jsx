@@ -595,7 +595,7 @@ export default function ExcelReceiptStudio({
             </section>
           )}
 
-          {editableFields.length > 0 && (
+          {templateData && editableFields.length > 0 && (
             <section className="excel-panel-card">
               <div className="excel-panel-title">
                 <h2>Data Reseller</h2>
@@ -613,9 +613,9 @@ export default function ExcelReceiptStudio({
 
                       <input
                         value={
-                          templateData[
+                          templateData?.[
                             field.key
-                          ] || ""
+                          ] ?? ""
                         }
                         onChange={(event) =>
                           updateEditableField(
@@ -727,6 +727,9 @@ const ReceiptPreview = forwardRef(
                 src={data.LOGO_RESELLER}
                 alt={data.NAMA_RESELLER}
                 crossOrigin="anonymous"
+                onError={(event) => {
+                  event.currentTarget.style.display = "none";
+                }}
               />
             ) : (
               <span>

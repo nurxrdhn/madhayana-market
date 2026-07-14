@@ -5,6 +5,7 @@ import { NotificationProvider } from "./contexts/NotificationContext";
 import "@flaticon/flaticon-uicons/css/all/all.css";
 import "./styles/globals.css";
 import useProducts from "./hooks/useProducts";
+import ExcelReceiptStudio from "./pages/seller/ExcelReceiptStudio";
 
 const slides = [
   {
