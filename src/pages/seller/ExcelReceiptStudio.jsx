@@ -4,6 +4,14 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { QRCodeSVG } from "qrcode.react";
 
+import {
+  deleteReceiptTemplate,
+  getReceiptTemplates,
+  renameReceiptTemplate,
+  saveReceiptTemplate,
+  setDefaultReceiptTemplate,
+} from "../../services/receiptTemplateService";
+
 const REQUIRED_SHEETS = [
   "TEMPLATE_STRUK",
   "FIELDS",
@@ -144,6 +152,20 @@ export default function ExcelReceiptStudio({
   const [error, setError] = useState("");
   const [processing, setProcessing] =
     useState(false);
+
+  const [templateName, setTemplateName] =
+    useState("Struk Pembelian");
+
+  const [savedTemplates, setSavedTemplates] =
+    useState(() =>
+      getReceiptTemplates(user?.uid)
+    );
+
+  const [selectedTemplateId, setSelectedTemplateId] =
+    useState("");
+
+  const [managerMessage, setManagerMessage] =
+    useState("");
 
   const computedData = useMemo(() => {
     if (!templateData) {
@@ -340,11 +362,125 @@ export default function ExcelReceiptStudio({
     }
   }
 
+  function refreshSavedTemplates() {
+    setSavedTemplates(
+      getReceiptTemplates(user?.uid)
+    );
+  }
+
   function updateEditableField(key, value) {
     setTemplateData((current) => ({
       ...current,
       [key]: value,
     }));
+  }
+
+  function saveCurrentTemplate() {
+    try {
+      if (!templateData) {
+        throw new Error(
+          "Upload dan baca template Excel terlebih dahulu."
+        );
+      }
+
+      const saved = saveReceiptTemplate({
+        sellerId: user?.uid,
+        sellerName: user?.name,
+        templateName,
+        fileName,
+        data: computedData,
+        fields: fieldDefinitions,
+        templateCells,
+      });
+
+      setSelectedTemplateId(saved.id);
+      refreshSavedTemplates();
+
+      setManagerMessage(
+        "Template berhasil disimpan."
+      );
+    } catch (saveError) {
+      setError(
+        saveError.message ||
+          "Template gagal disimpan."
+      );
+    }
+  }
+
+  function openSavedTemplate(template) {
+    setSelectedTemplateId(template.id);
+    setTemplateName(template.templateName);
+    setFileName(template.fileName);
+    setTemplateData(template.data);
+    setFieldDefinitions(template.fields || {});
+    setTemplateCells(template.templateCells || []);
+
+    setManagerMessage(
+      `${template.templateName} berhasil dibuka.`
+    );
+  }
+
+  function renameTemplate(template) {
+    const newName = window.prompt(
+      "Masukkan nama template baru:",
+      template.templateName
+    );
+
+    if (!newName) {
+      return;
+    }
+
+    try {
+      renameReceiptTemplate({
+        sellerId: user?.uid,
+        templateId: template.id,
+        templateName: newName,
+      });
+
+      refreshSavedTemplates();
+      setManagerMessage(
+        "Nama template berhasil diubah."
+      );
+    } catch (renameError) {
+      setError(renameError.message);
+    }
+  }
+
+  function makeDefaultTemplate(template) {
+    setDefaultReceiptTemplate({
+      sellerId: user?.uid,
+      templateId: template.id,
+    });
+
+    refreshSavedTemplates();
+
+    setManagerMessage(
+      `${template.templateName} dijadikan template default.`
+    );
+  }
+
+  function removeTemplate(template) {
+    const confirmed = window.confirm(
+      `Hapus template "${template.templateName}"?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    deleteReceiptTemplate({
+      sellerId: user?.uid,
+      templateId: template.id,
+    });
+
+    if (selectedTemplateId === template.id) {
+      setSelectedTemplateId("");
+    }
+
+    refreshSavedTemplates();
+    setManagerMessage(
+      "Template berhasil dihapus."
+    );
   }
 
   async function createReceiptCanvas() {
@@ -624,6 +760,33 @@ export default function ExcelReceiptStudio({
                     Template berhasil dibaca
                   </span>
                 </div>
+              </div>
+            )}
+
+            {computedData && (
+              <div className="excel-save-template">
+                <label>
+                  <span>Nama Template</span>
+
+                  <input
+                    value={templateName}
+                    onChange={(event) =>
+                      setTemplateName(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Contoh: Struk Pembelian"
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  className="modern-button primary full"
+                  onClick={saveCurrentTemplate}
+                >
+                  <i className="fi fi-rr-disk" />
+                  Simpan Template
+                </button>
               </div>
             )}
           </section>
