@@ -2249,7 +2249,7 @@ h3,
 
 .excel-edit-fields input {
   width: 100%;
-  min-height: 45px;
+  height:48px;
   padding: 0 13px;
   border: 1px solid #dfe4ec;
   border-radius: 12px;
@@ -2737,7 +2737,7 @@ h3,
 
 .excel-save-template input {
   width: 100%;
-  min-height: 45px;
+  height:48px;
   padding: 0 13px;
   border: 1px solid #dfe4ec;
   border-radius: 12px;
@@ -2916,7 +2916,7 @@ h3,
 
 .receipt-template-search,
 .receipt-template-filter {
-  min-height: 45px;
+  height:48px;
   padding: 0 13px;
   display: flex;
   align-items: center;
@@ -2939,12 +2939,29 @@ h3,
 }
 
 .receipt-template-search input,
-.receipt-template-filter select {
-  width: 100%;
-  border: 0;
-  outline: 0;
-  color: #263247;
-  background: transparent;
+.receipt-template-filter{
+  position:relative;
+}
+
+.receipt-template-filter select{
+  width:100%;
+  height:48px;
+  padding:0 44px 0 14px;
+  appearance:none;
+  border:none;
+  outline:none;
+  background:transparent;
+}
+
+.receipt-template-filter::after{
+  content:"▼";
+  position:absolute;
+  right:16px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:11px;
+  color:#7f8da5;
+  pointer-events:none;
 }
 
 .receipt-template-empty {
@@ -3088,7 +3105,7 @@ h3,
 
 .receipt-template-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 40px 40px 40px;
+  grid-template-columns:120px 42px 42px 42px;
   gap: 8px;
 }
 
