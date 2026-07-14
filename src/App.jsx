@@ -6,6 +6,8 @@ import "@flaticon/flaticon-uicons/css/all/all.css";
 import "./styles/globals.css";
 import useProducts from "./hooks/useProducts";
 import ExcelReceiptStudio from "./pages/seller/ExcelReceiptStudio";
+import BuyerReceiptModal from "./pages/buyer/BuyerReceiptModal";
+import { getFirstDefaultReceiptTemplate } from "./services/receiptTemplateService";
 
 const slides = [
   {
@@ -803,6 +805,7 @@ function BuyerDashboard({ user, onLogout }) {
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [generatedReceipt, setGeneratedReceipt] = useState(null);
 
   const {
     products: firestoreProducts,
@@ -1216,12 +1219,160 @@ function BuyerDashboard({ user, onLogout }) {
         <BuyerCheckoutModal
           cart={cart}
           onClose={() => setShowCheckout(false)}
-          onContinue={() => {
+          onContinue={(paymentMethod) => {
+            const template =
+              getFirstDefaultReceiptTemplate();
+
+            if (!template) {
+              showNotice(
+                "Template default reseller belum tersedia."
+              );
+              return;
+            }
+
+            const now = new Date();
+
+            const orderNumber =
+              `ORD-${now.getFullYear()}${String(
+                now.getMonth() + 1
+              ).padStart(2, "0")}${String(
+                now.getDate()
+              ).padStart(2, "0")}-${String(
+                now.getTime()
+              ).slice(-6)}`;
+
+            const grossTotal = cart.reduce(
+              (sum, item) =>
+                sum +
+                parsePrice(item.price) *
+                  item.quantity,
+              0
+            );
+
+            const discount = 0;
+            const adminFee = 1000;
+            const finalTotal =
+              grossTotal - discount + adminFee;
+
+            const templateData =
+              template.data || {};
+
+            setGeneratedReceipt({
+              sellerName:
+                templateData.NAMA_RESELLER ||
+                template.sellerName ||
+                "Madhayana Reseller",
+
+              sellerAddress:
+                templateData.ALAMAT_RESELLER ||
+                "Alamat reseller",
+
+              sellerContact:
+                templateData.KONTAK_RESELLER ||
+                "Kontak reseller",
+
+              logoURL:
+                templateData.LOGO_RESELLER || "",
+
+              buyerName:
+                user.name ||
+                user.displayName ||
+                "Buyer Madhayana",
+
+              buyerId:
+                user.userCode ||
+                user.id ||
+                user.uid ||
+                `BYR-${String(
+                  now.getTime()
+                ).slice(-8)}`,
+
+              buyerEmail:
+                user.email || "-",
+
+              orderNumber,
+
+              invoiceNumber:
+                orderNumber.replace(
+                  "ORD-",
+                  "INV-"
+                ),
+
+              transactionId:
+                `TRX-${String(
+                  now.getTime()
+                ).slice(-10)}`,
+
+              date:
+                now.toLocaleDateString(
+                  "id-ID",
+                  {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  }
+                ),
+
+              time:
+                `${now.toLocaleTimeString(
+                  "id-ID",
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  }
+                )} WIB`,
+
+              paymentMethod,
+              items: cart.map((item) => ({
+                id: item.id,
+                name: item.name,
+                icon: item.icon,
+                quantity: item.quantity,
+                unitPrice:
+                  parsePrice(item.price),
+                subtotal:
+                  parsePrice(item.price) *
+                  item.quantity,
+              })),
+
+              grossTotal,
+              discount,
+              adminFee,
+              finalTotal,
+
+              thankYou:
+                templateData
+                  .UCAPAN_TERIMA_KASIH ||
+                "Terima kasih telah berbelanja di Madhayana Market.",
+
+              notice:
+                templateData.HIMBAUAN ||
+                "Simpan bukti pembelian ini apabila diperlukan.",
+
+              orderURL:
+                `https://madhayana.com/order/${orderNumber}`,
+            });
+
             setShowCheckout(false);
+            setCart([]);
+            localStorage.removeItem(
+              "madhayana_buyer_cart"
+            );
+
             showNotice(
-              "Ringkasan checkout berhasil dibuat."
+              "Pesanan berhasil dibuat."
             );
           }}
+        />
+      )}
+
+      {generatedReceipt && (
+        <BuyerReceiptModal
+          receipt={generatedReceipt}
+          onClose={() =>
+            setGeneratedReceipt(null)
+          }
         />
       )}
     </main>
@@ -1690,6 +1841,9 @@ function BuyerCheckoutModal({
   onClose,
   onContinue,
 }) {
+  const [paymentMethod, setPaymentMethod] =
+    useState("");
+
   const total = cart.reduce(
     (sum, item) =>
       sum + parsePrice(item.price) * item.quantity,
@@ -1708,7 +1862,7 @@ function BuyerCheckoutModal({
         }
         onSubmit={(event) => {
           event.preventDefault();
-          onContinue();
+          onContinue(paymentMethod);
         }}
       >
         <button
@@ -1758,16 +1912,24 @@ function BuyerCheckoutModal({
           <div>
             <i className="fi fi-rr-credit-card" />
 
-            <select required defaultValue="">
+            <select
+              required
+              value={paymentMethod}
+              onChange={(event) =>
+                setPaymentMethod(
+                  event.target.value
+                )
+              }
+            >
               <option value="" disabled>
                 Pilih metode pembayaran
               </option>
-              <option value="qris">QRIS</option>
-              <option value="dana">DANA</option>
-              <option value="bank">
+              <option value="QRIS">QRIS</option>
+              <option value="DANA">DANA</option>
+              <option value="Transfer Bank">
                 Transfer Bank
               </option>
-              <option value="coin">
+              <option value="Madhayana Coin">
                 Madhayana Coin
               </option>
             </select>

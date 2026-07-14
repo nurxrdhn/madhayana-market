@@ -3363,3 +3363,346 @@ h3,
       42px;
   }
 }
+
+.buyer-receipt-backdrop {
+  z-index: 500;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.buyer-receipt-modal {
+  position: relative;
+  width: min(780px, 100%);
+  max-height: 94vh;
+  margin: auto;
+  overflow: hidden;
+  border-radius: 26px;
+  background: #f5f7fb;
+  box-shadow: 0 30px 90px rgba(10, 27, 61, 0.28);
+}
+
+.buyer-receipt-modal-header {
+  padding: 25px 28px 19px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid #e2e7ef;
+  background: #ffffff;
+}
+
+.buyer-receipt-modal-header h2 {
+  margin: 10px 0 5px;
+}
+
+.buyer-receipt-modal-header p {
+  margin: 0;
+  color: #788397;
+}
+
+.buyer-receipt-error {
+  margin: 16px 24px 0;
+  padding: 13px;
+  display: flex;
+  gap: 9px;
+  border-radius: 13px;
+  color: #a83333;
+  background: #fff0f0;
+}
+
+.buyer-receipt-scroll {
+  max-height: calc(94vh - 190px);
+  padding: 25px;
+  overflow-y: auto;
+}
+
+.buyer-generated-receipt {
+  position: relative;
+  width: min(100%, 500px);
+  margin: 0 auto;
+  padding: 29px;
+  overflow: hidden;
+  border: 1px solid #e0e6ef;
+  border-radius: 24px;
+  color: #182236;
+  background: #ffffff;
+  box-shadow: 0 20px 55px rgba(24, 42, 78, 0.13);
+}
+
+.buyer-receipt-watermark {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  width: 700px;
+  color: rgba(23, 92, 255, 0.035);
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-align: center;
+  transform: translate(-50%, -50%) rotate(-34deg);
+  pointer-events: none;
+}
+
+.buyer-generated-receipt > *:not(.buyer-receipt-watermark) {
+  position: relative;
+  z-index: 1;
+}
+
+.buyer-receipt-seller {
+  padding-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid #e9edf3;
+}
+
+.buyer-receipt-logo {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 64px;
+  overflow: hidden;
+  border-radius: 18px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #3276ff, #123fae);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.buyer-receipt-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.buyer-receipt-seller h2 {
+  margin: 0 0 4px;
+}
+
+.buyer-receipt-seller p,
+.buyer-receipt-seller small {
+  display: block;
+  margin: 3px 0;
+  color: #748095;
+}
+
+.buyer-receipt-success {
+  margin: 20px 0;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 17px;
+  color: #087453;
+  background: #eafff7;
+}
+
+.buyer-receipt-success > div {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #0ba878;
+}
+
+.buyer-receipt-success small,
+.buyer-receipt-success strong {
+  display: block;
+}
+
+.buyer-receipt-section {
+  padding: 18px 0;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.buyer-receipt-section h3 {
+  margin-bottom: 13px;
+  color: #175cff;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.buyer-receipt-row {
+  margin: 9px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  color: #687386;
+  font-size: 12px;
+}
+
+.buyer-receipt-row strong {
+  max-width: 62%;
+  color: #1b2639;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.buyer-receipt-row.discount strong {
+  color: #09966c;
+}
+
+.buyer-receipt-products {
+  display: grid;
+  gap: 9px;
+}
+
+.buyer-receipt-products article {
+  padding: 13px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  border-radius: 14px;
+  background: #f6f8fc;
+}
+
+.buyer-receipt-products article > div {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #175cff;
+  background: #e8efff;
+}
+
+.buyer-receipt-products span strong,
+.buyer-receipt-products span small {
+  display: block;
+}
+
+.buyer-receipt-products span small {
+  margin-top: 4px;
+  color: #7d8798;
+}
+
+.buyer-receipt-final-total {
+  margin-top: 15px;
+  padding: 18px;
+  border-radius: 17px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2e72ff, #113da9);
+}
+
+.buyer-receipt-final-total span,
+.buyer-receipt-final-total strong {
+  display: block;
+}
+
+.buyer-receipt-final-total strong {
+  margin-top: 5px;
+  font-size: 28px;
+}
+
+.buyer-receipt-verification {
+  margin-top: 20px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #e4e9f1;
+  border-radius: 16px;
+  background: #f8faff;
+}
+
+.buyer-receipt-verification > div {
+  padding: 8px;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.buyer-receipt-verification p {
+  color: #748095;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.buyer-receipt-verification small {
+  color: #175cff;
+  font-weight: 800;
+}
+
+.buyer-receipt-footer {
+  padding-top: 21px;
+  text-align: center;
+}
+
+.buyer-receipt-footer > p {
+  color: #7b8697;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.buyer-receipt-footer > div {
+  margin-top: 16px;
+  padding: 13px;
+  border-radius: 12px;
+  color: #697487;
+  background: #f5f7fb;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.buyer-receipt-footer > small {
+  display: block;
+  margin-top: 15px;
+  padding-top: 14px;
+  border-top: 1px dashed #d8dee8;
+  color: #175cff;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.buyer-receipt-modal-actions {
+  padding: 17px 24px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  border-top: 1px solid #e2e7ef;
+  background: #ffffff;
+}
+
+.buyer-receipt-modal-actions button {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 13px;
+  color: #175cff;
+  background: #eaf0ff;
+  font-weight: 800;
+}
+
+.buyer-receipt-modal-actions button.jpg {
+  color: #087453;
+  background: #e8fff6;
+}
+
+.buyer-receipt-modal-actions button.pdf {
+  color: #ffffff;
+  background: linear-gradient(135deg, #2e72ff, #123fae);
+}
+
+@media (max-width: 600px) {
+  .buyer-receipt-backdrop {
+    padding: 8px;
+  }
+
+  .buyer-receipt-scroll {
+    padding: 14px 8px;
+  }
+
+  .buyer-generated-receipt {
+    padding: 21px 17px;
+  }
+
+  .buyer-receipt-modal-actions {
+    grid-template-columns: 1fr;
+  }
+}

@@ -190,3 +190,13 @@ export function updateReceiptTemplateCategory({
 
   writeTemplates(templates);
 }
+
+export function getFirstDefaultReceiptTemplate() {
+  const templates = readTemplates();
+
+  return (
+    templates.find((template) => template.isDefault) ||
+    templates[0] ||
+    null
+  );
+}
