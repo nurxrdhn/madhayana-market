@@ -10,6 +10,7 @@ import BuyerReceiptModal from "./pages/buyer/BuyerReceiptModal";
 import BuyerStores from "./pages/buyer/BuyerStores";
 import BuyerStoreProfile from "./pages/buyer/BuyerStoreProfile";
 import { getPlatformReceiptTemplate } from "./services/receiptTemplateCloudService";
+import StoreProfileEditor from "./pages/seller/StoreProfileEditor";
 
 const slides = [
   {
@@ -2445,22 +2446,28 @@ function RoleDashboard({
             ))}
           </div>
 
-          <section className="modern-product-section">
-            <div className="modern-section-header">
-              <div>
-                <span className="modern-eyebrow">
-                  DASHBOARD {role.toUpperCase()}
-                </span>
-                <h2>{activeMenu}</h2>
-              </div>
-            </div>
+          {role === "reseller" &&
+          activeMenu === "Profil Toko" ? (
+            <StoreProfileEditor user={user} />
+          ) : (
+            <section className="modern-product-section">
+              <div className="modern-section-header">
+                <div>
+                  <span className="modern-eyebrow">
+                    DASHBOARD {role.toUpperCase()}
+                  </span>
 
-            <BuyerEmpty
-              icon={config.icon}
-              title={`Modul ${activeMenu}`}
-              description="Modul ini akan diaktifkan pada tahap berikutnya."
-            />
-          </section>
+                  <h2>{activeMenu}</h2>
+                </div>
+              </div>
+
+              <BuyerEmpty
+                icon={config.icon}
+                title={`Modul ${activeMenu}`}
+                description="Modul ini akan diaktifkan pada tahap berikutnya."
+              />
+            </section>
+          )}
         </section>
       </div>
     </main>

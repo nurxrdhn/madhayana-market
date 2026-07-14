@@ -69,6 +69,7 @@ export default function BuyerStores({
       }
 
       return [
+        store.storeId,
         store.name,
         store.ownerName,
         store.email,

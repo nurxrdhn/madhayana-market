@@ -7,47 +7,40 @@ import { db } from "../firebase/config";
 
 export async function getResellerStores() {
   const snapshot = await getDocs(
-    collection(db, "users")
+    collection(db, "stores")
   );
 
   return snapshot.docs
-    .map((document) => ({
-      id: document.id,
-      ...document.data(),
+    .map((storeDocument) => ({
+      id: storeDocument.id,
+      ...storeDocument.data(),
     }))
     .filter(
-      (user) =>
-        user.role === "reseller" ||
-        user.role === "seller"
+      (store) =>
+        store.isActive !== false
     )
-    .map((seller) => ({
-      id: seller.id,
+    .map((store) => ({
+      id: store.ownerId || store.id,
+      storeId: store.storeId || "",
       name:
-        seller.storeName ||
-        seller.name ||
-        seller.displayName ||
+        store.storeName ||
         "Toko Madhayana",
       ownerName:
-        seller.name ||
-        seller.displayName ||
+        store.ownerName ||
         "Reseller",
-      email: seller.email || "",
-      photoURL:
-        seller.logoURL ||
-        seller.photoURL ||
-        "",
+      email: store.email || "",
+      photoURL: store.logoURL || "",
       address:
-        seller.address ||
-        "Alamat toko belum tersedia",
-      whatsapp:
-        seller.whatsapp ||
-        seller.phone ||
-        "",
+        store.address ||
+        "Alamat belum tersedia",
+      whatsapp: store.whatsapp || "",
+      description:
+        store.description || "",
       followers: Number(
-        seller.followers || 0
+        store.followers || 0
       ),
       rating: Number(
-        seller.rating || 0
+        store.rating || 0
       ),
     }));
 }
