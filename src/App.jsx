@@ -7,7 +7,7 @@ import "./styles/globals.css";
 import useProducts from "./hooks/useProducts";
 import ExcelReceiptStudio from "./pages/seller/ExcelReceiptStudio";
 import BuyerReceiptModal from "./pages/buyer/BuyerReceiptModal";
-import { getFirstDefaultReceiptTemplate } from "./services/receiptTemplateService";
+import { getPlatformReceiptTemplate } from "./services/receiptTemplateCloudService";
 
 const slides = [
   {
@@ -1219,9 +1219,23 @@ function BuyerDashboard({ user, onLogout }) {
         <BuyerCheckoutModal
           cart={cart}
           onClose={() => setShowCheckout(false)}
-          onContinue={(paymentMethod) => {
-            const template =
-              getFirstDefaultReceiptTemplate();
+          onContinue={async (paymentMethod) => {
+            let template;
+
+            try {
+              template =
+                await getPlatformReceiptTemplate();
+            } catch (templateError) {
+              console.error(
+                "Template Firestore gagal dibaca:",
+                templateError
+              );
+
+              showNotice(
+                "Template struk gagal dibaca dari server."
+              );
+              return;
+            }
 
             if (!template) {
               showNotice(

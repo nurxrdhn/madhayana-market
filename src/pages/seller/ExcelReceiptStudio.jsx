@@ -20,6 +20,10 @@ import {
   updateReceiptTemplateCategory,
 } from "../../services/receiptTemplateService";
 
+import {
+  savePlatformReceiptTemplate,
+} from "../../services/receiptTemplateCloudService";
+
 const REQUIRED_SHEETS = [
   "TEMPLATE_STRUK",
   "FIELDS",
@@ -431,7 +435,7 @@ export default function ExcelReceiptStudio({
     }));
   }
 
-  function saveCurrentTemplate() {
+  async function saveCurrentTemplate() {
     try {
       setError("");
       setManagerMessage("");
@@ -487,11 +491,25 @@ export default function ExcelReceiptStudio({
         templateCells: [],
       });
 
+      await savePlatformReceiptTemplate({
+        sellerId,
+        sellerName:
+          user?.name ||
+          user?.displayName ||
+          "Reseller",
+        templateName:
+          templateName.trim(),
+        fileName,
+        data: computedData,
+        fields: fieldDefinitions,
+        category: "Struk",
+      });
+
       setSelectedTemplateId(saved.id);
       refreshSavedTemplates();
 
       setManagerMessage(
-        "Template berhasil disimpan."
+        "Template berhasil disimpan dan dapat digunakan oleh Buyer."
       );
     } catch (saveError) {
       console.error(
