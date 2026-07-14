@@ -157,9 +157,17 @@ export default function ExcelReceiptStudio({
     useState("Struk Pembelian");
 
   const [savedTemplates, setSavedTemplates] =
-    useState(() =>
-      getReceiptTemplates(user?.uid)
-    );
+    useState(() => {
+      const sellerId =
+        user?.uid ||
+        user?.id ||
+        user?.userCode ||
+        user?.email;
+
+      return sellerId
+        ? getReceiptTemplates(sellerId)
+        : [];
+    });
 
   const [selectedTemplateId, setSelectedTemplateId] =
     useState("");
@@ -363,8 +371,16 @@ export default function ExcelReceiptStudio({
   }
 
   function refreshSavedTemplates() {
+    const sellerId =
+      user?.uid ||
+      user?.id ||
+      user?.userCode ||
+      user?.email;
+
     setSavedTemplates(
-      getReceiptTemplates(user?.uid)
+      sellerId
+        ? getReceiptTemplates(sellerId)
+        : []
     );
   }
 
@@ -377,31 +393,62 @@ export default function ExcelReceiptStudio({
 
   function saveCurrentTemplate() {
     try {
-      if (!templateData) {
+      setError("");
+      setManagerMessage("");
+
+      if (!templateData || !computedData) {
         throw new Error(
           "Upload dan baca template Excel terlebih dahulu."
         );
       }
 
+      const sellerId =
+        user?.uid ||
+        user?.id ||
+        user?.userCode ||
+        user?.email;
+
+      if (!sellerId) {
+        throw new Error(
+          "Identitas akun reseller tidak ditemukan. Silakan keluar lalu login kembali."
+        );
+      }
+
+      if (!templateName.trim()) {
+        throw new Error(
+          "Nama template wajib diisi."
+        );
+      }
+
       const saved = saveReceiptTemplate({
-        sellerId: user?.uid,
-        sellerName: user?.name,
+        sellerId,
+        sellerName:
+          user?.name ||
+          user?.displayName ||
+          "Reseller",
         templateName,
         fileName,
         data: computedData,
         fields: fieldDefinitions,
-        templateCells,
+        templateCells: templateCells.slice(0, 100),
       });
 
       setSelectedTemplateId(saved.id);
-      refreshSavedTemplates();
+      setSavedTemplates(
+        getReceiptTemplates(sellerId)
+      );
 
       setManagerMessage(
         "Template berhasil disimpan."
       );
     } catch (saveError) {
+      console.error(
+        "SAVE TEMPLATE ERROR:",
+        saveError
+      );
+
       setError(
-        saveError.message ||
+        saveError?.message ||
           "Template gagal disimpan."
       );
     }
