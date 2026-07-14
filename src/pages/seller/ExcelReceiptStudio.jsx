@@ -2,6 +2,7 @@ import { forwardRef, useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
+import { QRCodeSVG } from "qrcode.react";
 
 const REQUIRED_SHEETS = [
   "TEMPLATE_STRUK",
@@ -56,6 +57,40 @@ function formatRupiah(value) {
     currency: "IDR",
     maximumFractionDigits: 0,
   }).format(numberValue(value));
+}
+
+function createInvoiceNumber(orderNumber) {
+  const cleanOrder = String(
+    orderNumber || "ORD-20260714-000001"
+  ).replace(/^ORD-?/, "");
+
+  return `INV-${cleanOrder}`;
+}
+
+function createTransactionId(orderNumber) {
+  const source = String(
+    orderNumber || Date.now()
+  )
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .slice(-8)
+    .toUpperCase();
+
+  return `TRX-${source}`;
+}
+
+function splitDateTime(value) {
+  const text = String(
+    value || "14 Juli 2026, 14:35 WIB"
+  );
+
+  const parts = text.split(",");
+
+  return {
+    date: parts[0]?.trim() || "-",
+    time:
+      parts.slice(1).join(",").trim() ||
+      "-",
+  };
 }
 
 function buildDataMap(rows) {
@@ -139,6 +174,14 @@ export default function ExcelReceiptStudio({
       numberValue(templateData.TOTAL) ||
       grossTotal - discount + adminFee;
 
+    const dateTime = splitDateTime(
+      templateData.TANGGAL_WAKTU
+    );
+
+    const orderNumber =
+      templateData.NO_PESANAN ||
+      "ORD-20260714-000001";
+
     return {
       ...templateData,
       JUMLAH: quantity,
@@ -147,6 +190,31 @@ export default function ExcelReceiptStudio({
       DISKON: discount,
       BIAYA_ADMIN: adminFee,
       TOTAL: finalTotal,
+
+      NO_INVOICE:
+        templateData.NO_INVOICE ||
+        createInvoiceNumber(orderNumber),
+
+      ID_TRANSAKSI:
+        templateData.ID_TRANSAKSI ||
+        createTransactionId(orderNumber),
+
+      TANGGAL_TRANSAKSI:
+        templateData.TANGGAL_TRANSAKSI ||
+        dateTime.date,
+
+      WAKTU_TRANSAKSI:
+        templateData.WAKTU_TRANSAKSI ||
+        dateTime.time,
+
+      ORDER_URL:
+        templateData.ORDER_URL ||
+        `https://madhayana.com/order/${encodeURIComponent(
+          orderNumber
+        )}`,
+
+      STATUS_PEMBAYARAN:
+        "BERHASIL",
     };
   }, [templateData]);
 
@@ -717,6 +785,10 @@ const ReceiptPreview = forwardRef(
         ref={ref}
         className="excel-receipt-card"
       >
+        <div className="receipt-watermark">
+          MADHAYANA MARKET
+        </div>
+
         <header className="excel-receipt-brand">
           <div className="excel-receipt-logo">
             {data.LOGO_RESELLER &&
@@ -728,7 +800,8 @@ const ReceiptPreview = forwardRef(
                 alt={data.NAMA_RESELLER}
                 crossOrigin="anonymous"
                 onError={(event) => {
-                  event.currentTarget.style.display = "none";
+                  event.currentTarget.style.display =
+                    "none";
                 }}
               />
             ) : (
@@ -766,8 +839,7 @@ const ReceiptPreview = forwardRef(
           <span>
             <small>Status Pembayaran</small>
             <strong>
-              {data.STATUS_PEMBAYARAN ||
-                "BERHASIL"}
+              PEMBAYARAN BERHASIL
             </strong>
           </span>
         </div>
@@ -800,8 +872,23 @@ const ReceiptPreview = forwardRef(
           />
 
           <ReceiptRow
-            label="Tanggal & Waktu"
-            value={data.TANGGAL_WAKTU}
+            label="No. Invoice"
+            value={data.NO_INVOICE}
+          />
+
+          <ReceiptRow
+            label="ID Transaksi"
+            value={data.ID_TRANSAKSI}
+          />
+
+          <ReceiptRow
+            label="Tanggal"
+            value={data.TANGGAL_TRANSAKSI}
+          />
+
+          <ReceiptRow
+            label="Waktu"
+            value={data.WAKTU_TRANSAKSI}
           />
 
           <ReceiptRow
@@ -873,14 +960,49 @@ const ReceiptPreview = forwardRef(
           </div>
         </section>
 
-        <footer className="excel-receipt-footer">
-          <strong>
-            {data.UCAPAN_TERIMA_KASIH}
-          </strong>
-
-          <p>{data.HIMBAUAN}</p>
+        <section className="receipt-verification">
+          <div className="receipt-qr">
+            <QRCodeSVG
+              value={data.ORDER_URL}
+              size={82}
+              level="M"
+              bgColor="#ffffff"
+              fgColor="#172033"
+            />
+          </div>
 
           <div>
+            <strong>Verifikasi Transaksi</strong>
+
+            <p>
+              Pindai kode QR untuk membuka detail
+              pesanan di Madhayana Market.
+            </p>
+
+            <small>
+              {data.NO_PESANAN}
+            </small>
+          </div>
+        </section>
+
+        <footer className="excel-receipt-footer">
+          <strong>
+            {data.UCAPAN_TERIMA_KASIH ||
+              "Terima kasih telah berbelanja."}
+          </strong>
+
+          <p>
+            {data.HIMBAUAN ||
+              "Simpan bukti transaksi ini apabila diperlukan."}
+          </p>
+
+          <div className="receipt-system-note">
+            Dokumen ini dibuat secara otomatis oleh
+            sistem Madhayana Market dan tidak
+            memerlukan tanda tangan maupun stempel.
+          </div>
+
+          <div className="receipt-platform-name">
             MADHAYANA MARKET
           </div>
         </footer>
@@ -902,4 +1024,5 @@ function ReceiptRow({
       <strong>{value || "-"}</strong>
     </div>
   );
+
 }
