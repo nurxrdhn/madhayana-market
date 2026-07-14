@@ -4,7 +4,6 @@ import {
   deleteDoc,
   doc,
   onSnapshot,
-  orderBy,
   query,
   serverTimestamp,
   updateDoc,
@@ -49,8 +48,7 @@ export function subscribeSellerProducts(
 ) {
   const sellerProductsQuery = query(
     productsCollection,
-    where("sellerId", "==", sellerId),
-    orderBy("createdAt", "desc")
+    where("sellerId", "==", sellerId)
   );
 
   return onSnapshot(

@@ -14,8 +14,13 @@ export default function useProducts() {
         setProductsLoading(false);
       },
       (error) => {
+        console.error(
+          "Produk Firestore gagal dimuat:",
+          error
+        );
+
         setProductsError(
-          error?.message || "Produk gagal dimuat dari database."
+          "Produk belum dapat dimuat. Silakan muat ulang halaman."
         );
         setProductsLoading(false);
       }
