@@ -3160,3 +3160,206 @@ h3,
     grid-template-columns: 1fr repeat(3, 40px);
   }
 }
+
+/* ==================================================
+   FINAL FIX: TEMPLATE MANAGER ALIGNMENT
+   ================================================== */
+
+.excel-receipt-layout {
+  grid-template-columns: 410px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.excel-control-panel {
+  min-width: 0;
+}
+
+.receipt-template-manager {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Search dan filter dibuat vertikal agar tidak berhimpitan */
+.receipt-manager-toolbar {
+  width: 100%;
+  margin: 20px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.receipt-template-search,
+.receipt-template-filter {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  overflow: hidden;
+  border: 1px solid #dfe4ec;
+  border-radius: 13px;
+  background: #fafbfd;
+}
+
+.receipt-template-search input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: #263247;
+  background: transparent;
+  text-overflow: ellipsis;
+}
+
+.receipt-template-filter {
+  padding-right: 0;
+}
+
+.receipt-template-filter select {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 44px 0 0;
+  border: 0;
+  outline: 0;
+  appearance: none;
+  color: #263247;
+  background: transparent;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.receipt-template-filter::after {
+  content: "⌄";
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-54%);
+  color: #718097;
+  background: #fafbfd;
+  font-size: 18px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Card template */
+.receipt-template-grid {
+  width: 100%;
+  min-width: 0;
+}
+
+.receipt-template-grid article {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.receipt-template-info,
+.receipt-template-info h3,
+.receipt-template-info p {
+  min-width: 0;
+}
+
+.receipt-category-field select {
+  width: 100%;
+  height: 44px;
+  padding: 0 42px 0 13px;
+  border: 1px solid #dfe4ec;
+  border-radius: 12px;
+  outline: 0;
+  appearance: auto;
+  color: #435067;
+  background: #fafbfd;
+}
+
+/* Tombol dibuat proporsional */
+.receipt-template-actions {
+  width: 100%;
+  display: grid;
+  grid-template-columns:
+    minmax(105px, 1fr)
+    42px
+    42px
+    42px;
+  gap: 8px;
+}
+
+.receipt-template-actions button {
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 12px;
+}
+
+.receipt-template-actions button.preview {
+  padding: 0 13px;
+}
+
+/* Preview kanan */
+.excel-preview-panel {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.excel-preview-heading {
+  width: min(100%, 490px);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.excel-empty-preview {
+  min-height: 520px;
+}
+
+/* Hilangkan aturan panah lama yang dapat bertumpuk */
+.receipt-template-filter select::-ms-expand {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .excel-receipt-layout {
+    grid-template-columns: 370px minmax(0, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 900px) {
+  .excel-receipt-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .excel-control-panel {
+    width: 100%;
+  }
+
+  .receipt-manager-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .receipt-manager-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .receipt-template-actions {
+    grid-template-columns:
+      minmax(0, 1fr)
+      42px
+      42px
+      42px;
+  }
+}

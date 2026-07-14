@@ -1,4 +1,10 @@
-import { forwardRef, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import * as XLSX from "xlsx";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
@@ -182,6 +188,38 @@ export default function ExcelReceiptStudio({
 
   const [managerMessage, setManagerMessage] =
     useState("");
+
+  useEffect(() => {
+    if (
+      templateData ||
+      savedTemplates.length === 0
+    ) {
+      return;
+    }
+
+    const templateToOpen =
+      savedTemplates.find(
+        (template) => template.isDefault
+      ) || savedTemplates[0];
+
+    if (!templateToOpen) {
+      return;
+    }
+
+    setSelectedTemplateId(templateToOpen.id);
+    setTemplateName(
+      templateToOpen.templateName ||
+      "Struk Pembelian"
+    );
+    setFileName(templateToOpen.fileName || "");
+    setTemplateData(templateToOpen.data || null);
+    setFieldDefinitions(
+      templateToOpen.fields || {}
+    );
+    setTemplateCells(
+      templateToOpen.templateCells || []
+    );
+  }, [savedTemplates, templateData]);
 
   const computedData = useMemo(() => {
     if (!templateData) {
