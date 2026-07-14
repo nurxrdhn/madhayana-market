@@ -8,6 +8,7 @@ import useProducts from "./hooks/useProducts";
 import ExcelReceiptStudio from "./pages/seller/ExcelReceiptStudio";
 import BuyerReceiptModal from "./pages/buyer/BuyerReceiptModal";
 import BuyerStores from "./pages/buyer/BuyerStores";
+import BuyerStoreProfile from "./pages/buyer/BuyerStoreProfile";
 import { getPlatformReceiptTemplate } from "./services/receiptTemplateCloudService";
 
 const slides = [
@@ -1101,7 +1102,13 @@ const [selectedStore,setSelectedStore]=useState(null);
                 className={
                   activeMenu === label ? "active" : ""
                 }
-                onClick={() => setActiveMenu(label)}
+                onClick={() => {
+                  setActiveMenu(label);
+
+                  if (label !== "Toko") {
+                    setSelectedStore(null);
+                  }
+                }}
               >
                 <i className={icon} />
                 {label}
@@ -1137,14 +1144,28 @@ const [selectedStore,setSelectedStore]=useState(null);
 
         <section className="modern-main-content">
           {activeMenu === "Toko" && (
-            <BuyerStores
-              onOpenStore={(store)=>{
-                setSelectedStore(store);
-                showNotice(
-                  `Membuka toko ${store.name}.`
-                );
-              }}
-            />
+            selectedStore ? (
+              <BuyerStoreProfile
+                store={selectedStore}
+                products={buyerProducts}
+                onBack={() =>
+                  setSelectedStore(null)
+                }
+                addToCart={addToCart}
+                openDetail={
+                  setSelectedProduct
+                }
+              />
+            ) : (
+              <BuyerStores
+                onOpenStore={(store) => {
+                  setSelectedStore(store);
+                  showNotice(
+                    `Membuka toko ${store.name}.`
+                  );
+                }}
+              />
+            )
           )}
 
           {activeMenu === "Beranda" && (
