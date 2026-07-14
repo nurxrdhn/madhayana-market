@@ -7,6 +7,7 @@ import "./styles/globals.css";
 import useProducts from "./hooks/useProducts";
 import ExcelReceiptStudio from "./pages/seller/ExcelReceiptStudio";
 import BuyerReceiptModal from "./pages/buyer/BuyerReceiptModal";
+import BuyerStores from "./pages/buyer/BuyerStores";
 import { getPlatformReceiptTemplate } from "./services/receiptTemplateCloudService";
 
 const slides = [
@@ -764,6 +765,7 @@ function Dashboard({
 function BuyerDashboard({ user, onLogout }) {
   const menuItems = [
     ["fi fi-rr-home", "Beranda"],
+    ["fi fi-rr-shop", "Toko"],
     ["fi fi-rr-box", "Pesanan"],
     ["fi fi-rr-heart", "Favorit"],
     ["fi fi-rr-shopping-cart", "Keranjang"],
@@ -805,6 +807,7 @@ function BuyerDashboard({ user, onLogout }) {
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showCheckout, setShowCheckout] = useState(false);
+const [selectedStore,setSelectedStore]=useState(null);
   const [generatedReceipt, setGeneratedReceipt] = useState(null);
 
   const {
@@ -1133,6 +1136,17 @@ function BuyerDashboard({ user, onLogout }) {
         </aside>
 
         <section className="modern-main-content">
+          {activeMenu === "Toko" && (
+            <BuyerStores
+              onOpenStore={(store)=>{
+                setSelectedStore(store);
+                showNotice(
+                  `Membuka toko ${store.name}.`
+                );
+              }}
+            />
+          )}
+
           {activeMenu === "Beranda" && (
             <BuyerHome
               firstName={firstName}

@@ -5,6 +5,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 
+import { getAuth } from "firebase/auth";
 import { db } from "../firebase/config";
 
 const TEMPLATE_COLLECTION = "receiptTemplates";
@@ -15,7 +16,6 @@ function cleanObject(value) {
 }
 
 export async function savePlatformReceiptTemplate({
-  sellerId,
   sellerName,
   templateName,
   fileName,
@@ -23,38 +23,57 @@ export async function savePlatformReceiptTemplate({
   fields,
   category = "Struk",
 }) {
-  if (!sellerId) {
-    throw new Error("UID reseller tidak ditemukan.");
+  const auth = getAuth();
+  const firebaseUser = auth.currentUser;
+
+  if (!firebaseUser?.uid) {
+    throw new Error(
+      "Akun Firebase belum terbaca. Silakan login ulang sebagai reseller."
+    );
   }
 
   if (!data) {
     throw new Error("Data template belum tersedia.");
   }
 
+  const templateReference = doc(
+    db,
+    TEMPLATE_COLLECTION,
+    PLATFORM_TEMPLATE_ID
+  );
+
   await setDoc(
-    doc(
-      db,
-      TEMPLATE_COLLECTION,
-      PLATFORM_TEMPLATE_ID
-    ),
+    templateReference,
     {
-      sellerId,
+      sellerId: firebaseUser.uid,
+      sellerEmail: firebaseUser.email || "",
       sellerName:
-        sellerName || "Madhayana Reseller",
+        sellerName ||
+        firebaseUser.displayName ||
+        "Madhayana Reseller",
+
       templateName:
         templateName || "Struk Pembelian",
+
       fileName: fileName || "",
       category,
       isDefault: true,
       isActive: true,
+
       data: cleanObject(data),
       fields: cleanObject(fields),
+
       updatedAt: serverTimestamp(),
     },
     {
       merge: true,
     }
   );
+
+  return {
+    id: PLATFORM_TEMPLATE_ID,
+    sellerId: firebaseUser.uid,
+  };
 }
 
 export async function getPlatformReceiptTemplate() {

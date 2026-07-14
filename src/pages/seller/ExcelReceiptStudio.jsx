@@ -492,7 +492,6 @@ export default function ExcelReceiptStudio({
       });
 
       await savePlatformReceiptTemplate({
-        sellerId,
         sellerName:
           user?.name ||
           user?.displayName ||
