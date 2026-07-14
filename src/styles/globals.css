@@ -1970,3 +1970,648 @@ h3,
     transform: rotate(360deg);
   }
 }
+
+.excel-receipt-page {
+  min-height: 100vh;
+  padding: 38px;
+  color: #172033;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(23, 92, 255, 0.1),
+      transparent 30%
+    ),
+    #f4f6fa;
+}
+
+.excel-receipt-header {
+  width: min(1380px, 100%);
+  margin: 0 auto 27px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.excel-receipt-header h1 {
+  margin: 15px 0 8px;
+  font-size: clamp(34px, 4vw, 52px);
+  letter-spacing: -0.05em;
+}
+
+.excel-receipt-header p {
+  max-width: 720px;
+  margin: 0;
+  color: #687386;
+  line-height: 1.7;
+}
+
+.excel-back-button {
+  margin-bottom: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #175cff;
+  background: transparent;
+  font-weight: 800;
+}
+
+.excel-user-card {
+  min-width: 220px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid #e1e6ef;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.excel-user-card > div {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 13px;
+  color: #ffffff;
+  background: #175cff;
+  font-weight: 800;
+}
+
+.excel-user-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.excel-user-card strong,
+.excel-user-card small {
+  display: block;
+}
+
+.excel-user-card small {
+  margin-top: 3px;
+  color: #7b8698;
+}
+
+.excel-error-message {
+  width: min(1380px, 100%);
+  margin: 0 auto 18px;
+  padding: 14px 17px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #efb5b5;
+  border-radius: 14px;
+  color: #a33232;
+  background: #fff0f0;
+  font-weight: 700;
+}
+
+.excel-receipt-layout {
+  width: min(1380px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 390px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.excel-control-panel {
+  display: grid;
+  gap: 17px;
+}
+
+.excel-panel-card {
+  padding: 22px;
+  border: 1px solid #e2e7ef;
+  border-radius: 21px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(26, 44, 84, 0.05);
+}
+
+.excel-panel-heading {
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.excel-panel-heading > div {
+  width: 47px;
+  height: 47px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: #087453;
+  background: #e8fff6;
+  font-size: 21px;
+}
+
+.excel-panel-heading strong,
+.excel-panel-heading small {
+  display: block;
+}
+
+.excel-panel-heading small {
+  margin-top: 4px;
+  color: #7b8698;
+}
+
+.excel-upload-area {
+  min-height: 180px;
+  position: relative;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  padding: 24px;
+  border: 2px dashed #ccd5e2;
+  border-radius: 18px;
+  color: #687386;
+  background: #f8fafc;
+  cursor: pointer;
+  text-align: center;
+  transition: 0.2s ease;
+}
+
+.excel-upload-area:hover {
+  border-color: #175cff;
+  background: #f2f6ff;
+}
+
+.excel-upload-area input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.excel-upload-area i {
+  margin-bottom: 13px;
+  color: #175cff;
+  font-size: 36px;
+}
+
+.excel-upload-area span {
+  margin-top: 7px;
+  font-size: 12px;
+}
+
+.excel-processing,
+.excel-file-success {
+  margin-top: 14px;
+  padding: 13px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border-radius: 13px;
+}
+
+.excel-processing {
+  color: #5f6c80;
+  background: #f3f6fb;
+}
+
+.excel-processing .buyer-loading-spinner {
+  width: 25px;
+  height: 25px;
+}
+
+.excel-file-success {
+  color: #087453;
+  background: #eafff7;
+}
+
+.excel-file-success strong,
+.excel-file-success span {
+  display: block;
+}
+
+.excel-file-success span {
+  margin-top: 3px;
+  font-size: 11px;
+}
+
+.excel-panel-title h2 {
+  margin-bottom: 6px;
+  font-size: 18px;
+}
+
+.excel-panel-title p {
+  color: #7b8698;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.excel-read-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+}
+
+.excel-read-summary div {
+  padding: 13px 8px;
+  border-radius: 13px;
+  background: #f5f7fb;
+  text-align: center;
+}
+
+.excel-read-summary span,
+.excel-read-summary strong {
+  display: block;
+}
+
+.excel-read-summary span {
+  color: #7d8798;
+  font-size: 10px;
+}
+
+.excel-read-summary strong {
+  margin-top: 6px;
+  color: #175cff;
+  font-size: 20px;
+}
+
+.excel-edit-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.excel-edit-fields label > span {
+  display: block;
+  margin-bottom: 7px;
+  color: #48556b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.excel-edit-fields input {
+  width: 100%;
+  min-height: 45px;
+  padding: 0 13px;
+  border: 1px solid #dfe4ec;
+  border-radius: 12px;
+  outline: none;
+  background: #fafbfd;
+}
+
+.excel-edit-fields input:focus {
+  border-color: #175cff;
+  box-shadow: 0 0 0 4px rgba(23, 92, 255, 0.1);
+  background: #ffffff;
+}
+
+.excel-preview-panel {
+  min-height: 750px;
+  padding: 28px;
+  border: 1px solid #e1e6ef;
+  border-radius: 25px;
+  background: #ffffff;
+  box-shadow: 0 16px 45px rgba(27, 45, 85, 0.07);
+}
+
+.excel-preview-heading {
+  margin-bottom: 25px;
+}
+
+.excel-preview-heading h2 {
+  margin: 11px 0 6px;
+  font-size: 27px;
+}
+
+.excel-preview-heading p {
+  color: #7b8698;
+}
+
+.excel-empty-preview {
+  min-height: 570px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+.excel-empty-preview > div {
+  width: 82px;
+  height: 82px;
+  margin-bottom: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 25px;
+  color: #175cff;
+  background: #eef3ff;
+  font-size: 34px;
+}
+
+.excel-empty-preview p {
+  max-width: 420px;
+  color: #7b8698;
+  line-height: 1.7;
+}
+
+.excel-receipt-card {
+  width: min(100%, 490px);
+  margin: 0 auto;
+  padding: 29px;
+  border: 1px solid #e1e6ee;
+  border-radius: 25px;
+  color: #182236;
+  background: #ffffff;
+  box-shadow: 0 24px 65px rgba(25, 42, 79, 0.14);
+}
+
+.excel-receipt-brand {
+  padding-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid #e9edf3;
+}
+
+.excel-receipt-logo {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 64px;
+  overflow: hidden;
+  border-radius: 19px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #3276ff, #113da8);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.excel-receipt-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.excel-receipt-brand h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.excel-receipt-brand p {
+  margin: 0;
+  color: #687386;
+  font-size: 12px;
+}
+
+.excel-receipt-brand small {
+  display: block;
+  margin-top: 4px;
+  color: #8791a1;
+  font-size: 10px;
+}
+
+.excel-receipt-success {
+  margin: 20px 0;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 17px;
+  color: #087453;
+  background: #eafff7;
+}
+
+.excel-receipt-success > div {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #0ba878;
+}
+
+.excel-receipt-success small,
+.excel-receipt-success strong {
+  display: block;
+}
+
+.excel-receipt-success small {
+  margin-bottom: 3px;
+  color: #518272;
+  font-size: 10px;
+}
+
+.excel-receipt-section {
+  padding: 18px 0;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.excel-receipt-section h3 {
+  margin-bottom: 13px;
+  color: #175cff;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.excel-receipt-row {
+  margin: 9px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  color: #687386;
+  font-size: 12px;
+}
+
+.excel-receipt-row strong {
+  max-width: 62%;
+  color: #1b2639;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.excel-receipt-row.discount strong {
+  color: #0a946a;
+}
+
+.excel-product-card {
+  padding: 14px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border-radius: 15px;
+  background: #f6f8fc;
+}
+
+.excel-product-card > div {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: #175cff;
+  background: #e8efff;
+}
+
+.excel-product-card span strong,
+.excel-product-card span small {
+  display: block;
+}
+
+.excel-product-card span strong {
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.excel-product-card span small {
+  color: #7c8798;
+  font-size: 10px;
+}
+
+.excel-product-card > strong {
+  font-size: 12px;
+}
+
+.excel-receipt-total {
+  margin-top: 15px;
+  padding: 18px;
+  border-radius: 17px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2e72ff, #113da9);
+}
+
+.excel-receipt-total span,
+.excel-receipt-total strong {
+  display: block;
+}
+
+.excel-receipt-total span {
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 10px;
+}
+
+.excel-receipt-total strong {
+  margin-top: 5px;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+}
+
+.excel-receipt-footer {
+  padding-top: 21px;
+  text-align: center;
+}
+
+.excel-receipt-footer > strong {
+  display: block;
+  font-size: 12px;
+}
+
+.excel-receipt-footer p {
+  margin: 8px 0 17px;
+  color: #7b8697;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.excel-receipt-footer > div {
+  padding-top: 14px;
+  border-top: 1px dashed #d8dee8;
+  color: #175cff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.excel-receipt-actions {
+  width: min(100%, 490px);
+  margin: 18px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.excel-receipt-actions button {
+  min-height: 49px;
+  padding: 0 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.excel-share-button {
+  color: #175cff;
+  background: #eaf0ff;
+}
+
+.excel-jpg-button {
+  color: #087453;
+  background: #e8fff6;
+}
+
+.excel-pdf-button {
+  color: #ffffff;
+  background: linear-gradient(135deg, #2e72ff, #123fae);
+  box-shadow: 0 12px 25px rgba(23, 92, 255, 0.2);
+}
+
+@media (max-width: 980px) {
+  .excel-receipt-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .excel-control-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .excel-control-panel > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 650px) {
+  .excel-receipt-page {
+    padding: 20px 13px;
+  }
+
+  .excel-receipt-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .excel-user-card {
+    width: 100%;
+  }
+
+  .excel-control-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .excel-control-panel > :first-child {
+    grid-column: auto;
+  }
+
+  .excel-preview-panel {
+    padding: 20px 12px;
+  }
+
+  .excel-receipt-card {
+    padding: 21px 17px;
+    border-radius: 20px;
+  }
+
+  .excel-receipt-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .excel-product-card {
+    grid-template-columns: auto 1fr;
+  }
+
+  .excel-product-card > strong {
+    grid-column: 2;
+  }
+}

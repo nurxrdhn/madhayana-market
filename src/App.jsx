@@ -231,6 +231,7 @@ function MadhayanaApp() {
   );
   const [slide, setSlide] = useState(0);
   const [selectedRole, setSelectedRole] = useState(null);
+  const [showExcelStudio, setShowExcelStudio] = useState(false);
 
   useEffect(() => {
     if (user) setPage("dashboard");
@@ -401,10 +402,29 @@ function MadhayanaApp() {
     );
   }
 
+  if (
+    page === "dashboard" &&
+    user &&
+    user.role === "reseller" &&
+    showExcelStudio
+  ) {
+    return (
+      <ExcelReceiptStudio
+        user={user}
+        onBack={() =>
+          setShowExcelStudio(false)
+        }
+      />
+    );
+  }
+
   if (page === "dashboard" && user) {
     return (
       <Dashboard
         user={user}
+        onOpenExcelStudio={() =>
+          setShowExcelStudio(true)
+        }
         onLogout={async () => {
           await logout();
           setPage("roles");
@@ -717,7 +737,11 @@ function ModernInput({
 }
 
 
-function Dashboard({ user, onLogout }) {
+function Dashboard({
+  user,
+  onLogout,
+  onOpenExcelStudio,
+}) {
   const role = user.role || "buyer";
 
   if (role === "buyer") {
@@ -729,6 +753,7 @@ function Dashboard({ user, onLogout }) {
       role={role}
       user={user}
       onLogout={onLogout}
+      onOpenExcelStudio={onOpenExcelStudio}
     />
   );
 }
@@ -2081,7 +2106,12 @@ function BuyerEmpty({
   );
 }
 
-function RoleDashboard({ role, user, onLogout }) {
+function RoleDashboard({
+  role,
+  user,
+  onLogout,
+  onOpenExcelStudio,
+}) {
   const config =
     dashboardData[role] || dashboardData.guest;
 
@@ -2173,6 +2203,17 @@ function RoleDashboard({ role, user, onLogout }) {
                 <span>!</span>
               </h1>
               <p>{config.subtitle}</p>
+
+              {role === "reseller" && (
+                <button
+                  type="button"
+                  className="modern-button light"
+                  onClick={onOpenExcelStudio}
+                >
+                  <i className="fi fi-rr-file-excel" />
+                  Upload Template Excel
+                </button>
+              )}
             </div>
 
             <div className="modern-dashboard-hero-icon">
