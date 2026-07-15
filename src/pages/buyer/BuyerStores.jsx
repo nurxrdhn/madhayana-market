@@ -73,17 +73,15 @@ export default function BuyerStores({
         store.storeId,
         store.name,
         store.ownerName,
-        store.email,
-        store.address,
       ];
 
-      return searchableValues.some(
-        (value) =>
-          String(value || "")
-            .trim()
-            .toLowerCase()
-            .includes(keyword)
-      );
+      return searchableValues.some((value) => {
+        const normalizedValue = String(value || "")
+          .trim()
+          .toLowerCase();
+
+        return normalizedValue.includes(keyword);
+      });
     });
   }, [stores, search]);
 
