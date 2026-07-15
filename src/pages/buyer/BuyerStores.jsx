@@ -65,7 +65,7 @@ export default function BuyerStores({
       .toLowerCase();
 
     if (!keyword) {
-      return stores;
+      return [];
     }
 
     return stores.filter((store) => {
@@ -147,13 +147,27 @@ export default function BuyerStores({
 
       {!loading &&
         !error &&
+        !search.trim() && (
+          <div className="buyer-store-state">
+            <i className="fi fi-rr-search" />
+            <h3>Cari toko terlebih dahulu</h3>
+            <p>
+              Masukkan ID toko, nama toko,
+              atau nama reseller pada kolom pencarian.
+            </p>
+          </div>
+        )}
+
+      {!loading &&
+        !error &&
+        search.trim() &&
         filteredStores.length === 0 && (
           <div className="buyer-store-state">
-            <i className="fi fi-rr-shop" />
+            <i className="fi fi-rr-search-alt" />
             <h3>Toko tidak ditemukan</h3>
             <p>
-              Gunakan nama toko atau email
-              reseller yang berbeda.
+              Tidak ada toko yang cocok dengan
+              pencarian "{search.trim()}".
             </p>
           </div>
         )}
