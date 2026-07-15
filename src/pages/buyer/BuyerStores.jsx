@@ -69,19 +69,22 @@ export default function BuyerStores({
     }
 
     return stores.filter((store) => {
-      const searchableValues = [
-        store.storeId,
-        store.name,
-        store.ownerName,
-      ];
+      const storeId = String(
+        store.storeId || ""
+      )
+        .trim()
+        .toLowerCase();
 
-      return searchableValues.some((value) => {
-        const normalizedValue = String(value || "")
-          .trim()
-          .toLowerCase();
+      const storeName = String(
+        store.name || ""
+      )
+        .trim()
+        .toLowerCase();
 
-        return normalizedValue.includes(keyword);
-      });
+      return (
+        storeId.includes(keyword) ||
+        storeName.includes(keyword)
+      );
     });
   }, [stores, search]);
 
