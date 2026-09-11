@@ -2747,6 +2747,966 @@ function SellerSummary({ user, onOpenExcelStudio }) {
 }
 
 
+
+function SellerProducts({ user }) {
+  const initialProducts = [
+    {
+      id: "PRD-001",
+      name: "Premium React Dashboard",
+      sku: "MRKT-REACT-001",
+      category: "Template",
+      type: "Digital",
+      price: 149000,
+      stock: 999,
+      sold: 184,
+      status: "Aktif",
+      rating: 4.9,
+      views: 2840,
+      conversion: 8.4,
+      updated: "Hari ini",
+    },
+    {
+      id: "PRD-002",
+      name: "UI Kit Mobile Banking",
+      sku: "MRKT-UI-002",
+      category: "UI Kit",
+      type: "Digital",
+      price: 99000,
+      stock: 999,
+      sold: 142,
+      status: "Aktif",
+      rating: 4.8,
+      views: 2190,
+      conversion: 7.2,
+      updated: "Hari ini",
+    },
+    {
+      id: "PRD-003",
+      name: "Landing Page Business",
+      sku: "MRKT-WEB-003",
+      category: "Website",
+      type: "Digital",
+      price: 179000,
+      stock: 999,
+      sold: 98,
+      status: "Aktif",
+      rating: 4.7,
+      views: 1640,
+      conversion: 6.8,
+      updated: "Kemarin",
+    },
+    {
+      id: "PRD-004",
+      name: "Paket Konten UMKM",
+      sku: "MRKT-CNT-004",
+      category: "Konten",
+      type: "Digital",
+      price: 79000,
+      stock: 12,
+      sold: 75,
+      status: "Aktif",
+      rating: 4.8,
+      views: 1120,
+      conversion: 6.1,
+      updated: "2 hari lalu",
+    },
+    {
+      id: "PRD-005",
+      name: "Template Invoice Premium",
+      sku: "MRKT-INV-005",
+      category: "Template",
+      type: "Digital",
+      price: 49000,
+      stock: 4,
+      sold: 233,
+      status: "Aktif",
+      rating: 4.9,
+      views: 3420,
+      conversion: 9.6,
+      updated: "3 hari lalu",
+    },
+    {
+      id: "PRD-006",
+      name: "Bundle Desain Social Media",
+      sku: "MRKT-SOC-006",
+      category: "Desain",
+      type: "Digital",
+      price: 129000,
+      stock: 999,
+      sold: 0,
+      status: "Draft",
+      rating: 0,
+      views: 0,
+      conversion: 0,
+      updated: "Baru saja",
+    },
+  ];
+
+  const [products, setProducts] = useState(initialProducts);
+  const [searchProduct, setSearchProduct] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("Semua");
+  const [statusFilter, setStatusFilter] = useState("Semua");
+  const [sortProduct, setSortProduct] = useState("terbaru");
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [viewMode, setViewMode] = useState("table");
+  const [notice, setNotice] = useState("");
+
+  const categories = [
+    "Semua",
+    ...Array.from(
+      new Set(products.map((product) => product.category))
+    ),
+  ];
+
+  const filteredProducts = products
+    .filter((product) => {
+      const query = searchProduct.trim().toLowerCase();
+
+      const matchSearch =
+        !query ||
+        product.name.toLowerCase().includes(query) ||
+        product.sku.toLowerCase().includes(query) ||
+        product.id.toLowerCase().includes(query);
+
+      const matchCategory =
+        categoryFilter === "Semua" ||
+        product.category === categoryFilter;
+
+      const matchStatus =
+        statusFilter === "Semua" ||
+        product.status === statusFilter;
+
+      return matchSearch && matchCategory && matchStatus;
+    })
+    .sort((a, b) => {
+      if (sortProduct === "harga-tertinggi") {
+        return b.price - a.price;
+      }
+
+      if (sortProduct === "harga-terendah") {
+        return a.price - b.price;
+      }
+
+      if (sortProduct === "terlaris") {
+        return b.sold - a.sold;
+      }
+
+      if (sortProduct === "dilihat") {
+        return b.views - a.views;
+      }
+
+      return b.id.localeCompare(a.id);
+    });
+
+  const totalProducts = products.length;
+  const activeProducts = products.filter(
+    (product) => product.status === "Aktif"
+  ).length;
+  const draftProducts = products.filter(
+    (product) => product.status === "Draft"
+  ).length;
+  const lowStockProducts = products.filter(
+    (product) =>
+      product.stock !== 999 &&
+      product.stock <= 10
+  ).length;
+
+  const rupiah = (value) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(value);
+
+  const showNotice = (message) => {
+    setNotice(message);
+
+    window.setTimeout(() => {
+      setNotice("");
+    }, 2800);
+  };
+
+  const toggleSelectProduct = (id) => {
+    setSelectedProducts((current) =>
+      current.includes(id)
+        ? current.filter((item) => item !== id)
+        : [...current, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    const visibleIds = filteredProducts.map(
+      (product) => product.id
+    );
+
+    const allSelected =
+      visibleIds.length > 0 &&
+      visibleIds.every((id) =>
+        selectedProducts.includes(id)
+      );
+
+    if (allSelected) {
+      setSelectedProducts((current) =>
+        current.filter(
+          (id) => !visibleIds.includes(id)
+        )
+      );
+    } else {
+      setSelectedProducts((current) => [
+        ...new Set([...current, ...visibleIds]),
+      ]);
+    }
+  };
+
+  const toggleProductStatus = (id) => {
+    setProducts((current) =>
+      current.map((product) =>
+        product.id === id
+          ? {
+              ...product,
+              status:
+                product.status === "Aktif"
+                  ? "Nonaktif"
+                  : "Aktif",
+            }
+          : product
+      )
+    );
+
+    showNotice("Status produk berhasil diperbarui.");
+  };
+
+  const duplicateProduct = (product) => {
+    const duplicate = {
+      ...product,
+      id: `PRD-${String(products.length + 1).padStart(
+        3,
+        "0"
+      )}`,
+      sku: `${product.sku}-COPY`,
+      name: `${product.name} - Salinan`,
+      sold: 0,
+      views: 0,
+      conversion: 0,
+      status: "Draft",
+      updated: "Baru saja",
+    };
+
+    setProducts((current) => [
+      duplicate,
+      ...current,
+    ]);
+
+    showNotice("Produk berhasil diduplikasi sebagai Draft.");
+  };
+
+  const deleteProduct = (id) => {
+    setProducts((current) =>
+      current.filter((product) => product.id !== id)
+    );
+
+    setSelectedProducts((current) =>
+      current.filter((item) => item !== id)
+    );
+
+    showNotice("Produk dihapus dari katalog lokal.");
+  };
+
+  const bulkActivate = () => {
+    if (selectedProducts.length === 0) {
+      showNotice("Pilih produk terlebih dahulu.");
+      return;
+    }
+
+    setProducts((current) =>
+      current.map((product) =>
+        selectedProducts.includes(product.id)
+          ? { ...product, status: "Aktif" }
+          : product
+      )
+    );
+
+    showNotice(
+      `${selectedProducts.length} produk diaktifkan.`
+    );
+  };
+
+  const bulkDisable = () => {
+    if (selectedProducts.length === 0) {
+      showNotice("Pilih produk terlebih dahulu.");
+      return;
+    }
+
+    setProducts((current) =>
+      current.map((product) =>
+        selectedProducts.includes(product.id)
+          ? { ...product, status: "Nonaktif" }
+          : product
+      )
+    );
+
+    showNotice(
+      `${selectedProducts.length} produk dinonaktifkan.`
+    );
+  };
+
+  const bulkDelete = () => {
+    if (selectedProducts.length === 0) {
+      showNotice("Pilih produk terlebih dahulu.");
+      return;
+    }
+
+    setProducts((current) =>
+      current.filter(
+        (product) =>
+          !selectedProducts.includes(product.id)
+      )
+    );
+
+    setSelectedProducts([]);
+    showNotice("Produk terpilih berhasil dihapus.");
+  };
+
+  const exportProducts = () => {
+    const headers = [
+      "ID",
+      "SKU",
+      "Nama",
+      "Kategori",
+      "Tipe",
+      "Harga",
+      "Stok",
+      "Terjual",
+      "Status",
+      "Rating",
+      "Dilihat",
+      "Konversi",
+    ];
+
+    const rows = products.map((product) => [
+      product.id,
+      product.sku,
+      product.name,
+      product.category,
+      product.type,
+      product.price,
+      product.stock,
+      product.sold,
+      product.status,
+      product.rating,
+      product.views,
+      `${product.conversion}%`,
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row
+          .map((value) =>
+            `"${String(value).replace(/"/g, '""')}"`
+          )
+          .join(",")
+      )
+      .join("\n");
+
+    const blob = new Blob([csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = "Produk-Seller-Madhayana.csv";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    URL.revokeObjectURL(url);
+
+    showNotice("Data produk berhasil diekspor.");
+  };
+
+  return (
+    <div className="seller-products">
+      {notice && (
+        <div className="seller-product-notice">
+          <i className="fi fi-rr-check-circle" />
+          {notice}
+        </div>
+      )}
+
+      <section className="seller-product-command">
+        <div>
+          <span className="seller-product-kicker">
+            PRODUCT COMMAND CENTER
+          </span>
+
+          <h2>Kelola seluruh produkmu.</h2>
+
+          <p>
+            Tambah produk, atur harga, kontrol stok,
+            pantau performa, dan optimalkan katalog dari
+            satu tempat.
+          </p>
+        </div>
+
+        <div className="seller-product-command-actions">
+          <button
+            type="button"
+            className="seller-product-secondary"
+            onClick={exportProducts}
+          >
+            <i className="fi fi-rr-file-export" />
+            Ekspor
+          </button>
+
+          <button
+            type="button"
+            className="seller-product-secondary"
+            onClick={() =>
+              showNotice(
+                "Fitur impor massal siap dihubungkan ke Excel."
+              )
+            }
+          >
+            <i className="fi fi-rr-file-import" />
+            Impor
+          </button>
+
+          <button
+            type="button"
+            className="seller-product-primary"
+            onClick={() =>
+              showNotice(
+                "Form Tambah Produk akan dibuka pada tahap berikutnya."
+              )
+            }
+          >
+            <i className="fi fi-rr-plus" />
+            Tambah Produk
+          </button>
+        </div>
+      </section>
+
+      <section className="seller-product-stats">
+        <article>
+          <span className="seller-product-stat-icon">
+            <i className="fi fi-rr-boxes" />
+          </span>
+          <div>
+            <small>Total Produk</small>
+            <strong>{totalProducts}</strong>
+          </div>
+        </article>
+
+        <article>
+          <span className="seller-product-stat-icon green">
+            <i className="fi fi-rr-check-circle" />
+          </span>
+          <div>
+            <small>Produk Aktif</small>
+            <strong>{activeProducts}</strong>
+          </div>
+        </article>
+
+        <article>
+          <span className="seller-product-stat-icon orange">
+            <i className="fi fi-rr-triangle-warning" />
+          </span>
+          <div>
+            <small>Stok Menipis</small>
+            <strong>{lowStockProducts}</strong>
+          </div>
+        </article>
+
+        <article>
+          <span className="seller-product-stat-icon gray">
+            <i className="fi fi-rr-edit" />
+          </span>
+          <div>
+            <small>Draft</small>
+            <strong>{draftProducts}</strong>
+          </div>
+        </article>
+      </section>
+
+      <section className="seller-product-intelligence">
+        <article className="seller-product-ai">
+          <div className="seller-product-ai-icon">
+            <i className="fi fi-rr-sparkles" />
+          </div>
+
+          <div>
+            <span>JP PRODUCT INTELLIGENCE</span>
+            <h3>Optimasi Produk Pintar</h3>
+            <p>
+              Analisis judul, harga, stok, konversi,
+              dan performa produk untuk memberikan
+              rekomendasi peningkatan penjualan.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              showNotice(
+                "Analisis AI siap dihubungkan ke data produk asli."
+              )
+            }
+          >
+            Analisis Katalog
+            <i className="fi fi-rr-arrow-right" />
+          </button>
+        </article>
+
+        <article className="seller-product-health">
+          <div className="seller-card-mini-heading">
+            <div>
+              <span>KESEHATAN KATALOG</span>
+              <h3>92%</h3>
+            </div>
+
+            <span className="seller-health-score">
+              Sangat Baik
+            </span>
+          </div>
+
+          <div className="seller-health-bar">
+            <span style={{ width: "92%" }} />
+          </div>
+
+          <p>
+            2 produk dapat dioptimalkan untuk mendapatkan
+            performa yang lebih baik.
+          </p>
+        </article>
+      </section>
+
+      <section className="seller-product-tools">
+        <button type="button">
+          <i className="fi fi-rr-tags" />
+          <div>
+            <strong>Harga Otomatis</strong>
+            <small>Aturan harga & margin</small>
+          </div>
+        </button>
+
+        <button type="button">
+          <i className="fi fi-rr-box-open" />
+          <div>
+            <strong>Prediksi Stok</strong>
+            <small>Estimasi kebutuhan stok</small>
+          </div>
+        </button>
+
+        <button type="button">
+          <i className="fi fi-rr-layers" />
+          <div>
+            <strong>Bundle Produk</strong>
+            <small>Gabungkan beberapa produk</small>
+          </div>
+        </button>
+
+        <button type="button">
+          <i className="fi fi-rr-calendar-clock" />
+          <div>
+            <strong>Jadwal Produk</strong>
+            <small>Publikasi otomatis</small>
+          </div>
+        </button>
+
+        <button type="button">
+          <i className="fi fi-rr-qrcode" />
+          <div>
+            <strong>QR Produk</strong>
+            <small>Bagikan melalui QR</small>
+          </div>
+        </button>
+
+        <button type="button">
+          <i className="fi fi-rr-search-alt" />
+          <div>
+            <strong>SEO Produk</strong>
+            <small>Optimasi pencarian</small>
+          </div>
+        </button>
+      </section>
+
+      <section className="seller-product-panel">
+        <div className="seller-product-panel-top">
+          <div>
+            <span className="seller-product-kicker">
+              KATALOG PRODUK
+            </span>
+            <h3>Semua Produk</h3>
+          </div>
+
+          <div className="seller-product-view-toggle">
+            <button
+              type="button"
+              className={
+                viewMode === "table" ? "active" : ""
+              }
+              onClick={() => setViewMode("table")}
+            >
+              <i className="fi fi-rr-list" />
+            </button>
+
+            <button
+              type="button"
+              className={
+                viewMode === "grid" ? "active" : ""
+              }
+              onClick={() => setViewMode("grid")}
+            >
+              <i className="fi fi-rr-apps" />
+            </button>
+          </div>
+        </div>
+
+        <div className="seller-product-toolbar">
+          <div className="seller-product-search">
+            <i className="fi fi-rr-search" />
+            <input
+              value={searchProduct}
+              onChange={(event) =>
+                setSearchProduct(event.target.value)
+              }
+              placeholder="Cari nama, SKU, atau ID produk..."
+            />
+          </div>
+
+          <select
+            value={categoryFilter}
+            onChange={(event) =>
+              setCategoryFilter(event.target.value)
+            }
+          >
+            {categories.map((category) => (
+              <option
+                value={category}
+                key={category}
+              >
+                {category === "Semua"
+                  ? "Semua Kategori"
+                  : category}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={statusFilter}
+            onChange={(event) =>
+              setStatusFilter(event.target.value)
+            }
+          >
+            <option value="Semua">
+              Semua Status
+            </option>
+            <option value="Aktif">Aktif</option>
+            <option value="Nonaktif">Nonaktif</option>
+            <option value="Draft">Draft</option>
+          </select>
+
+          <select
+            value={sortProduct}
+            onChange={(event) =>
+              setSortProduct(event.target.value)
+            }
+          >
+            <option value="terbaru">
+              Terbaru
+            </option>
+            <option value="terlaris">
+              Terlaris
+            </option>
+            <option value="dilihat">
+              Paling Banyak Dilihat
+            </option>
+            <option value="harga-tertinggi">
+              Harga Tertinggi
+            </option>
+            <option value="harga-terendah">
+              Harga Terendah
+            </option>
+          </select>
+        </div>
+
+        {selectedProducts.length > 0 && (
+          <div className="seller-product-bulk">
+            <strong>
+              {selectedProducts.length} produk dipilih
+            </strong>
+
+            <div>
+              <button
+                type="button"
+                onClick={bulkActivate}
+              >
+                Aktifkan
+              </button>
+
+              <button
+                type="button"
+                onClick={bulkDisable}
+              >
+                Nonaktifkan
+              </button>
+
+              <button
+                type="button"
+                className="danger"
+                onClick={bulkDelete}
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        )}
+
+        {viewMode === "table" ? (
+          <div className="seller-product-table-wrap">
+            <table className="seller-product-table">
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      checked={
+                        filteredProducts.length > 0 &&
+                        filteredProducts.every(
+                          (product) =>
+                            selectedProducts.includes(
+                              product.id
+                            )
+                        )
+                      }
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
+                  <th>Produk</th>
+                  <th>Harga</th>
+                  <th>Stok</th>
+                  <th>Terjual</th>
+                  <th>Performa</th>
+                  <th>Status</th>
+                  <th />
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredProducts.map((product) => (
+                  <tr key={product.id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.includes(
+                          product.id
+                        )}
+                        onChange={() =>
+                          toggleSelectProduct(
+                            product.id
+                          )
+                        }
+                      />
+                    </td>
+
+                    <td>
+                      <div className="seller-product-info">
+                        <span className="seller-product-thumb">
+                          <i className="fi fi-rr-box" />
+                        </span>
+
+                        <div>
+                          <strong>{product.name}</strong>
+                          <small>
+                            {product.sku} ·{" "}
+                            {product.category}
+                          </small>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      <strong>
+                        {rupiah(product.price)}
+                      </strong>
+                    </td>
+
+                    <td>
+                      <span
+                        className={
+                          product.stock <= 10
+                            ? "seller-stock-low"
+                            : ""
+                        }
+                      >
+                        {product.stock === 999
+                          ? "Digital"
+                          : product.stock}
+                      </span>
+                    </td>
+
+                    <td>{product.sold}</td>
+
+                    <td>
+                      <div className="seller-product-performance">
+                        <span>
+                          <i className="fi fi-rr-eye" />
+                          {product.views}
+                        </span>
+                        <span>
+                          {product.conversion}%
+                        </span>
+                      </div>
+                    </td>
+
+                    <td>
+                      <button
+                        type="button"
+                        className={`seller-product-status ${product.status.toLowerCase()}`}
+                        onClick={() =>
+                          toggleProductStatus(
+                            product.id
+                          )
+                        }
+                      >
+                        <span />
+                        {product.status}
+                      </button>
+                    </td>
+
+                    <td>
+                      <div className="seller-product-actions">
+                        <button
+                          type="button"
+                          title="Edit"
+                          onClick={() =>
+                            showNotice(
+                              `Edit ${product.name}`
+                            )
+                          }
+                        >
+                          <i className="fi fi-rr-edit" />
+                        </button>
+
+                        <button
+                          type="button"
+                          title="Duplikasi"
+                          onClick={() =>
+                            duplicateProduct(product)
+                          }
+                        >
+                          <i className="fi fi-rr-copy-alt" />
+                        </button>
+
+                        <button
+                          type="button"
+                          title="Hapus"
+                          className="danger"
+                          onClick={() =>
+                            deleteProduct(product.id)
+                          }
+                        >
+                          <i className="fi fi-rr-trash" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="seller-product-grid">
+            {filteredProducts.map((product) => (
+              <article key={product.id}>
+                <div className="seller-product-card-cover">
+                  <i className="fi fi-rr-box-open" />
+
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={selectedProducts.includes(
+                        product.id
+                      )}
+                      onChange={() =>
+                        toggleSelectProduct(product.id)
+                      }
+                    />
+                  </label>
+                </div>
+
+                <div className="seller-product-card-body">
+                  <div className="seller-product-card-meta">
+                    <span>{product.category}</span>
+                    <span>{product.status}</span>
+                  </div>
+
+                  <h4>{product.name}</h4>
+                  <small>{product.sku}</small>
+
+                  <strong>
+                    {rupiah(product.price)}
+                  </strong>
+
+                  <div className="seller-product-card-stats">
+                    <span>
+                      <i className="fi fi-rr-shopping-cart" />
+                      {product.sold}
+                    </span>
+                    <span>
+                      <i className="fi fi-rr-eye" />
+                      {product.views}
+                    </span>
+                    <span>
+                      <i className="fi fi-rr-star" />
+                      {product.rating || "-"}
+                    </span>
+                  </div>
+
+                  <div className="seller-product-card-actions">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        toggleProductStatus(product.id)
+                      }
+                    >
+                      {product.status === "Aktif"
+                        ? "Nonaktifkan"
+                        : "Aktifkan"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        duplicateProduct(product)
+                      }
+                    >
+                      <i className="fi fi-rr-copy-alt" />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+
+        {filteredProducts.length === 0 && (
+          <div className="seller-product-empty">
+            <i className="fi fi-rr-search-alt" />
+            <h4>Produk tidak ditemukan</h4>
+            <p>
+              Coba ubah pencarian atau filter produk.
+            </p>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+
 function RoleDashboard({
   role,
   user,
