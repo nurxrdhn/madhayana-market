@@ -158,11 +158,33 @@ export function AuthProvider({ children }) {
               );
 
               if (existingProfile) {
-                setProfile(existingProfile);
+                const activeRole =
+                  sessionStorage.getItem(
+                    "madhayanaActiveRole"
+                  );
+
+                if (
+                  activeRole === "buyer" ||
+                  activeRole === "reseller"
+                ) {
+                  setProfile({
+                    ...existingProfile,
+                    role: activeRole,
+                  });
+                } else {
+                  setProfile(existingProfile);
+                }
               } else {
+                const activeRole =
+                  sessionStorage.getItem(
+                    "madhayanaActiveRole"
+                  );
+
                 await saveProfile(
                   currentUser,
-                  "buyer"
+                  activeRole === "reseller"
+                    ? "reseller"
+                    : "buyer"
                 );
               }
             } catch (error) {
@@ -271,6 +293,15 @@ export function AuthProvider({ children }) {
       );
     }
 
+    /*
+     * Simpan portal yang dipilih sebelum popup Google dibuka.
+     * Ini mencegah onAuthStateChanged mengembalikan role lama.
+     */
+    sessionStorage.setItem(
+      "madhayanaActiveRole",
+      normalizedRole
+    );
+
     const credential = await signInWithPopup(
       auth,
       googleProvider
@@ -280,25 +311,13 @@ export function AuthProvider({ children }) {
       credential.user.uid
     );
 
-    const savedProfile = existingProfile
-      ? existingProfile
-      : await saveProfile(
-          credential.user,
-          normalizedRole,
-          {
-            name:
-              credential.user.displayName ||
-              "Pengguna Madhayana",
-          }
-        );
-
-    if (!savedProfile) {
-      throw new Error(
-        "Profil pengguna gagal dibuat di Firestore."
+    if (
+      existingProfile?.status === "blocked"
+    ) {
+      sessionStorage.removeItem(
+        "madhayanaActiveRole"
       );
-    }
 
-    if (savedProfile.status === "blocked") {
       await signOut(auth);
 
       throw new Error(
@@ -306,10 +325,83 @@ export function AuthProvider({ children }) {
       );
     }
 
-    setFirebaseUser(credential.user);
-    setProfile(savedProfile);
+    let userCode =
+      existingProfile?.userCode || "";
 
-    return savedProfile;
+    if (normalizedRole === "reseller") {
+      if (userCode.startsWith("RSL-")) {
+        userCode = userCode.replace(
+          /^RSL-/,
+          "SLR-"
+        );
+      } else if (!userCode.startsWith("SLR-")) {
+        userCode = createUserCode(
+          "reseller",
+          credential.user.uid
+        );
+      }
+    }
+
+    if (normalizedRole === "buyer") {
+      if (!userCode.startsWith("BYR-")) {
+        userCode = createUserCode(
+          "buyer",
+          credential.user.uid
+        );
+      }
+    }
+
+    await setDoc(
+      doc(db, "users", credential.user.uid),
+      {
+        uid: credential.user.uid,
+        name:
+          existingProfile?.name ||
+          credential.user.displayName ||
+          "Pengguna Madhayana",
+        email:
+          credential.user.email ||
+          existingProfile?.email ||
+          "",
+        photoURL:
+          credential.user.photoURL ||
+          existingProfile?.photoURL ||
+          "",
+        role: normalizedRole,
+        userCode,
+        status:
+          existingProfile?.status ||
+          "active",
+        membership:
+          existingProfile?.membership ||
+          "free",
+        coin:
+          existingProfile?.coin ??
+          0,
+        balance:
+          existingProfile?.balance ??
+          0,
+        updatedAt: serverTimestamp(),
+      },
+      {
+        merge: true,
+      }
+    );
+
+    const latestProfile = await readProfile(
+      credential.user.uid
+    );
+
+    const activeProfile = {
+      ...latestProfile,
+      role: normalizedRole,
+      userCode,
+    };
+
+    setFirebaseUser(credential.user);
+    setProfile(activeProfile);
+
+    return activeProfile;
   }
 
   function enterAsGuest() {
@@ -332,6 +424,10 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
+    sessionStorage.removeItem(
+      "madhayanaActiveRole"
+    );
+
     if (firebaseUser) {
       await signOut(auth);
     }
