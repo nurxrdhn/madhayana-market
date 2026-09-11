@@ -444,7 +444,7 @@ function MadhayanaApp() {
 
 function AuthPage({ role, login, register, loginGoogle, onBack }) {
   const operatorMode = role.key === "operator";
-  const [mode, setMode] = useState(operatorMode ? "login" : "register");
+  const [mode, setMode] = useState("login");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [form, setForm] = useState({
@@ -540,41 +540,91 @@ function AuthPage({ role, login, register, loginGoogle, onBack }) {
   };
 
   return (
-    <main className={`modern-auth-page auth-${role.className}`}>
+    <main className={`modern-auth-page auth-slide-page auth-${role.className} ${mode === "register" ? "is-register" : "is-login"} ${operatorMode ? "is-operator" : ""}`}>
       <section className="modern-auth-visual">
         <button className="modern-back-button" onClick={onBack}>
           <i className="fi fi-rr-arrow-left" />
           Kembali
         </button>
 
-        <div>
+        <div className="auth-slider-copy">
           <div className="modern-auth-role-icon">
             <i className={role.icon} />
           </div>
-          <span className="modern-eyebrow">PORTAL {role.title.toUpperCase()}</span>
+
+          <span className="modern-eyebrow">
+            {operatorMode
+              ? "PORTAL OPERATOR"
+              : mode === "login"
+                ? "AKUN BARU"
+                : "SUDAH TERDAFTAR"}
+          </span>
+
           <h1>
             {operatorMode
-              ? "Kelola operasional Madhayana Market"
-              : role.key === "reseller"
-                ? "Bangun toko digitalmu bersama Madhayana"
-                : "Nikmati pengalaman belanja digital yang lebih praktis"}
+              ? "Kelola operasional Madhayana."
+              : mode === "login"
+                ? "Belum punya akun?"
+                : "Selamat datang kembali."}
           </h1>
-          <p>{role.description}</p>
+
+          <p>
+            {operatorMode
+              ? "Gunakan akun operator yang diberikan oleh Super Admin untuk mengakses sistem operasional."
+              : mode === "login"
+                ? `Daftar sebagai ${role.title} dan mulai menggunakan seluruh fitur Madhayana Market.`
+                : `Masuk kembali sebagai ${role.title} untuk melanjutkan aktivitas Anda.`}
+          </p>
+
+          {!operatorMode && (
+            <button
+              type="button"
+              className="auth-slider-switch-button"
+              onClick={() =>
+                setMode((current) =>
+                  current === "login" ? "register" : "login"
+                )
+              }
+            >
+              <span>
+                {mode === "login"
+                  ? "Daftar sekarang"
+                  : "Masuk sekarang"}
+              </span>
+
+              <i
+                className={
+                  mode === "login"
+                    ? "fi fi-rr-arrow-right"
+                    : "fi fi-rr-arrow-left"
+                }
+              />
+            </button>
+          )}
 
           <div className="modern-auth-features">
             <span>
               <i className="fi fi-rr-check-circle" />
-              Dashboard khusus berdasarkan peran
+              {mode === "login"
+                ? "Pendaftaran cepat dan sederhana"
+                : "Akses akun dan aktivitas Anda"}
             </span>
+
             <span>
               <i className="fi fi-rr-check-circle" />
               Sistem autentikasi menggunakan Firebase
             </span>
+
             <span>
               <i className="fi fi-rr-check-circle" />
               Data akun tersimpan secara aman
             </span>
           </div>
+        </div>
+
+        <div className="auth-slider-signature">
+          <span>MADHAYANA</span>
+          <small>MARKET / 2026</small>
         </div>
       </section>
 
