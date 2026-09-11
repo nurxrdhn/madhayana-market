@@ -7545,3 +7545,126 @@ h3,
     flex-direction: column;
   }
 }
+
+/* =====================================================
+   SELLER DASHBOARD - FULL WIDTH RESPONSIVE FIX
+   Memanfaatkan seluruh ruang setelah sidebar
+   ===================================================== */
+
+.dashboard-reseller .modern-dashboard-layout {
+  grid-template-columns: 210px minmax(0, 1fr) !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.dashboard-reseller .modern-main-content {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  padding-right: 28px !important;
+  box-sizing: border-box;
+}
+
+.dashboard-reseller .modern-dashboard-hero,
+.dashboard-reseller .seller-products,
+.dashboard-reseller .seller-products-page,
+.dashboard-reseller .seller-product-command,
+.dashboard-reseller .seller-product-panel {
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box;
+}
+
+/* Header ikut memenuhi layar */
+.dashboard-reseller .modern-dashboard-header {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Search header lebih proporsional di monitor lebar */
+.dashboard-reseller .modern-dashboard-search {
+  width: clamp(340px, 34vw, 650px) !important;
+  max-width: none !important;
+}
+
+/* Product Command Center melebar */
+.dashboard-reseller .seller-product-command {
+  grid-column: 1 / -1;
+}
+
+/* Statistik memanfaatkan ruang yang tersedia */
+.dashboard-reseller .seller-product-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* AI + kesehatan katalog dibuat proporsional */
+.dashboard-reseller .seller-product-intelligence {
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 0.8fr);
+}
+
+/* Fitur cepat ikut memenuhi lebar */
+.dashboard-reseller .seller-product-tools {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+/* Katalog paling bawah full width */
+.dashboard-reseller .seller-product-panel {
+  grid-column: 1 / -1;
+}
+
+/* Monitor besar */
+@media (min-width: 1500px) {
+  .dashboard-reseller .modern-main-content {
+    padding-left: 28px !important;
+    padding-right: 34px !important;
+  }
+
+  .dashboard-reseller .seller-product-command {
+    padding: 30px 32px;
+  }
+
+  .dashboard-reseller .seller-product-stats {
+    gap: 16px;
+  }
+
+  .dashboard-reseller .seller-product-tools {
+    gap: 12px;
+  }
+}
+
+/* Laptop */
+@media (max-width: 1200px) {
+  .dashboard-reseller .seller-product-tools {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dashboard-reseller .seller-product-intelligence {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tablet / mobile */
+@media (max-width: 950px) {
+  .dashboard-reseller .modern-dashboard-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-reseller .modern-main-content {
+    padding: 18px !important;
+  }
+
+  .dashboard-reseller .seller-product-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-reseller .seller-product-tools {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-reseller .seller-product-stats,
+  .dashboard-reseller .seller-product-tools {
+    grid-template-columns: 1fr;
+  }
+}
