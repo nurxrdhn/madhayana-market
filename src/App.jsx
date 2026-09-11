@@ -3707,6 +3707,799 @@ function SellerProducts({ user }) {
 }
 
 
+
+function SellerOrders() {
+  const initialOrders = [
+    {
+      id: "ORD-20260911-001",
+      buyer: "Budi Santoso",
+      email: "budi@example.com",
+      product: "Premium React Dashboard",
+      total: 149000,
+      payment: "QRIS",
+      paymentStatus: "Lunas",
+      status: "Perlu Diproses",
+      time: "11 Sep 2026 · 12:42",
+      items: 1,
+      priority: "Normal",
+    },
+    {
+      id: "ORD-20260911-002",
+      buyer: "Rina Maharani",
+      email: "rina@example.com",
+      product: "UI Kit Mobile Banking",
+      total: 198000,
+      payment: "VA BCA",
+      paymentStatus: "Lunas",
+      status: "Diproses",
+      time: "11 Sep 2026 · 11:18",
+      items: 2,
+      priority: "Tinggi",
+    },
+    {
+      id: "ORD-20260911-003",
+      buyer: "Andi Pratama",
+      email: "andi@example.com",
+      product: "Landing Page Business",
+      total: 179000,
+      payment: "QRIS",
+      paymentStatus: "Menunggu",
+      status: "Menunggu Pembayaran",
+      time: "11 Sep 2026 · 10:36",
+      items: 1,
+      priority: "Normal",
+    },
+    {
+      id: "ORD-20260910-004",
+      buyer: "Dimas Saputra",
+      email: "dimas@example.com",
+      product: "Template Invoice Premium",
+      total: 49000,
+      payment: "Saldo",
+      paymentStatus: "Lunas",
+      status: "Selesai",
+      time: "10 Sep 2026 · 21:12",
+      items: 1,
+      priority: "Normal",
+    },
+    {
+      id: "ORD-20260910-005",
+      buyer: "Salsa Putri",
+      email: "salsa@example.com",
+      product: "Bundle Desain Social Media",
+      total: 129000,
+      payment: "VA BRI",
+      paymentStatus: "Refund",
+      status: "Dibatalkan",
+      time: "10 Sep 2026 · 18:44",
+      items: 1,
+      priority: "Tinggi",
+    },
+  ];
+
+  const [orders, setOrders] = useState(initialOrders);
+  const [searchOrder, setSearchOrder] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Semua");
+  const [paymentFilter, setPaymentFilter] = useState("Semua");
+  const [selectedOrders, setSelectedOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [notice, setNotice] = useState("");
+
+  const rupiah = (value) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(value);
+
+  const showNotice = (message) => {
+    setNotice(message);
+    window.setTimeout(() => setNotice(""), 2600);
+  };
+
+  const filteredOrders = orders.filter((order) => {
+    const query = searchOrder.trim().toLowerCase();
+
+    const matchSearch =
+      !query ||
+      order.id.toLowerCase().includes(query) ||
+      order.buyer.toLowerCase().includes(query) ||
+      order.product.toLowerCase().includes(query);
+
+    const matchStatus =
+      statusFilter === "Semua" ||
+      order.status === statusFilter;
+
+    const matchPayment =
+      paymentFilter === "Semua" ||
+      order.paymentStatus === paymentFilter;
+
+    return matchSearch && matchStatus && matchPayment;
+  });
+
+  const totalRevenue = orders
+    .filter((order) => order.paymentStatus === "Lunas")
+    .reduce((sum, order) => sum + order.total, 0);
+
+  const needProcess = orders.filter(
+    (order) => order.status === "Perlu Diproses"
+  ).length;
+
+  const processing = orders.filter(
+    (order) => order.status === "Diproses"
+  ).length;
+
+  const completed = orders.filter(
+    (order) => order.status === "Selesai"
+  ).length;
+
+  const toggleSelect = (id) => {
+    setSelectedOrders((current) =>
+      current.includes(id)
+        ? current.filter((item) => item !== id)
+        : [...current, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    const ids = filteredOrders.map((order) => order.id);
+
+    const allSelected =
+      ids.length > 0 &&
+      ids.every((id) => selectedOrders.includes(id));
+
+    setSelectedOrders(
+      allSelected
+        ? selectedOrders.filter((id) => !ids.includes(id))
+        : [...new Set([...selectedOrders, ...ids])]
+    );
+  };
+
+  const updateOrderStatus = (id, status) => {
+    setOrders((current) =>
+      current.map((order) =>
+        order.id === id
+          ? { ...order, status }
+          : order
+      )
+    );
+
+    showNotice("Status pesanan berhasil diperbarui.");
+  };
+
+  const bulkProcess = () => {
+    if (!selectedOrders.length) {
+      showNotice("Pilih pesanan terlebih dahulu.");
+      return;
+    }
+
+    setOrders((current) =>
+      current.map((order) =>
+        selectedOrders.includes(order.id)
+          ? { ...order, status: "Diproses" }
+          : order
+      )
+    );
+
+    showNotice(
+      `${selectedOrders.length} pesanan dipindahkan ke Diproses.`
+    );
+  };
+
+  const bulkComplete = () => {
+    if (!selectedOrders.length) {
+      showNotice("Pilih pesanan terlebih dahulu.");
+      return;
+    }
+
+    setOrders((current) =>
+      current.map((order) =>
+        selectedOrders.includes(order.id)
+          ? { ...order, status: "Selesai" }
+          : order
+      )
+    );
+
+    showNotice(
+      `${selectedOrders.length} pesanan diselesaikan.`
+    );
+  };
+
+  const exportOrders = () => {
+    const headers = [
+      "No Pesanan",
+      "Buyer",
+      "Email",
+      "Produk",
+      "Total",
+      "Pembayaran",
+      "Status Pembayaran",
+      "Status Pesanan",
+      "Tanggal",
+    ];
+
+    const rows = orders.map((order) => [
+      order.id,
+      order.buyer,
+      order.email,
+      order.product,
+      order.total,
+      order.payment,
+      order.paymentStatus,
+      order.status,
+      order.time,
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row
+          .map((value) =>
+            `"${String(value).replace(/"/g, '""')}"`
+          )
+          .join(",")
+      )
+      .join("\n");
+
+    const blob = new Blob([csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = "Pesanan-Seller-Madhayana.csv";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    URL.revokeObjectURL(url);
+
+    showNotice("Data pesanan berhasil diekspor.");
+  };
+
+  return (
+    <div className="seller-orders-page">
+      {notice && (
+        <div className="seller-orders-notice">
+          <i className="fi fi-rr-check-circle" />
+          {notice}
+        </div>
+      )}
+
+      <section className="seller-orders-command">
+        <div>
+          <span>ORDER COMMAND CENTER</span>
+          <h2>Kelola semua pesanan.</h2>
+          <p>
+            Proses transaksi, verifikasi pembayaran,
+            pantau SLA, dan tangani pesanan bermasalah
+            dari satu tempat.
+          </p>
+        </div>
+
+        <div className="seller-orders-command-actions">
+          <button
+            type="button"
+            onClick={exportOrders}
+          >
+            <i className="fi fi-rr-file-export" />
+            Ekspor
+          </button>
+
+          <button
+            type="button"
+            className="primary"
+            onClick={() =>
+              showNotice(
+                "Sinkronisasi pesanan siap dihubungkan ke Firestore."
+              )
+            }
+          >
+            <i className="fi fi-rr-refresh" />
+            Sinkronkan
+          </button>
+        </div>
+      </section>
+
+      <section className="seller-orders-stats">
+        <article>
+          <span className="seller-orders-stat-icon">
+            <i className="fi fi-rr-receipt" />
+          </span>
+          <div>
+            <small>Total Pesanan</small>
+            <strong>{orders.length}</strong>
+          </div>
+        </article>
+
+        <article>
+          <span className="seller-orders-stat-icon warning">
+            <i className="fi fi-rr-time-quarter-past" />
+          </span>
+          <div>
+            <small>Perlu Diproses</small>
+            <strong>{needProcess}</strong>
+          </div>
+        </article>
+
+        <article>
+          <span className="seller-orders-stat-icon blue">
+            <i className="fi fi-rr-box" />
+          </span>
+          <div>
+            <small>Sedang Diproses</small>
+            <strong>{processing}</strong>
+          </div>
+        </article>
+
+        <article>
+          <span className="seller-orders-stat-icon green">
+            <i className="fi fi-rr-wallet" />
+          </span>
+          <div>
+            <small>Pendapatan Masuk</small>
+            <strong>{rupiah(totalRevenue)}</strong>
+          </div>
+        </article>
+      </section>
+
+      <section className="seller-orders-intelligence">
+        <article className="seller-orders-sla">
+          <div>
+            <span>SLA PESANAN</span>
+            <h3>98,6%</h3>
+            <p>
+              Pesanan diproses sesuai target waktu.
+            </p>
+          </div>
+
+          <div className="seller-orders-sla-ring">
+            <strong>98%</strong>
+            <small>Tepat waktu</small>
+          </div>
+        </article>
+
+        <article className="seller-orders-alert">
+          <span className="seller-orders-alert-icon">
+            <i className="fi fi-rr-triangle-warning" />
+          </span>
+
+          <div>
+            <span>PERLU PERHATIAN</span>
+            <h3>2 transaksi membutuhkan pemeriksaan</h3>
+            <p>
+              Pembayaran tertunda atau prioritas tinggi.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setStatusFilter("Menunggu Pembayaran")
+            }
+          >
+            Periksa
+          </button>
+        </article>
+      </section>
+
+      <section className="seller-orders-tools">
+        <button type="button">
+          <i className="fi fi-rr-bell-ring" />
+          <div>
+            <strong>Pengingat Otomatis</strong>
+            <small>Follow-up pembayaran</small>
+          </div>
+        </button>
+
+        <button type="button">
+          <i className="fi fi-rr-shield-check" />
+          <div>
+            <strong>Deteksi Risiko</strong>
+            <small>Transaksi mencurigakan</small>
+          </div>
+        </button>
+
+        <button type="button">
+          <i className="fi fi-rr-comment-alt" />
+          <div>
+            <strong>Chat Buyer</strong>
+            <small>Hubungi langsung</small>
+          </div>
+        </button>
+
+        <button type="button">
+          <i className="fi fi-rr-receipt" />
+          <div>
+            <strong>Invoice Otomatis</strong>
+            <small>Buat struk transaksi</small>
+          </div>
+        </button>
+
+        <button type="button">
+          <i className="fi fi-rr-undo" />
+          <div>
+            <strong>Refund Center</strong>
+            <small>Kelola pengembalian</small>
+          </div>
+        </button>
+
+        <button type="button">
+          <i className="fi fi-rr-chart-line-up" />
+          <div>
+            <strong>Insight Pesanan</strong>
+            <small>Analisis transaksi</small>
+          </div>
+        </button>
+      </section>
+
+      <section className="seller-orders-panel">
+        <div className="seller-orders-panel-head">
+          <div>
+            <span>TRANSAKSI</span>
+            <h3>Semua Pesanan</h3>
+          </div>
+
+          <strong>
+            {filteredOrders.length} Pesanan
+          </strong>
+        </div>
+
+        <div className="seller-orders-toolbar">
+          <div className="seller-orders-search">
+            <i className="fi fi-rr-search" />
+            <input
+              value={searchOrder}
+              onChange={(event) =>
+                setSearchOrder(event.target.value)
+              }
+              placeholder="Cari no. pesanan, buyer, atau produk..."
+            />
+          </div>
+
+          <select
+            value={statusFilter}
+            onChange={(event) =>
+              setStatusFilter(event.target.value)
+            }
+          >
+            <option value="Semua">
+              Semua Status
+            </option>
+            <option value="Perlu Diproses">
+              Perlu Diproses
+            </option>
+            <option value="Diproses">
+              Diproses
+            </option>
+            <option value="Menunggu Pembayaran">
+              Menunggu Pembayaran
+            </option>
+            <option value="Selesai">
+              Selesai
+            </option>
+            <option value="Dibatalkan">
+              Dibatalkan
+            </option>
+          </select>
+
+          <select
+            value={paymentFilter}
+            onChange={(event) =>
+              setPaymentFilter(event.target.value)
+            }
+          >
+            <option value="Semua">
+              Semua Pembayaran
+            </option>
+            <option value="Lunas">Lunas</option>
+            <option value="Menunggu">Menunggu</option>
+            <option value="Refund">Refund</option>
+          </select>
+        </div>
+
+        {selectedOrders.length > 0 && (
+          <div className="seller-orders-bulk">
+            <strong>
+              {selectedOrders.length} pesanan dipilih
+            </strong>
+
+            <div>
+              <button
+                type="button"
+                onClick={bulkProcess}
+              >
+                Tandai Diproses
+              </button>
+
+              <button
+                type="button"
+                onClick={bulkComplete}
+              >
+                Tandai Selesai
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="seller-orders-table-wrap">
+          <table className="seller-orders-table">
+            <thead>
+              <tr>
+                <th>
+                  <input
+                    type="checkbox"
+                    checked={
+                      filteredOrders.length > 0 &&
+                      filteredOrders.every((order) =>
+                        selectedOrders.includes(order.id)
+                      )
+                    }
+                    onChange={toggleSelectAll}
+                  />
+                </th>
+                <th>Pesanan</th>
+                <th>Buyer</th>
+                <th>Produk</th>
+                <th>Total</th>
+                <th>Pembayaran</th>
+                <th>Status</th>
+                <th />
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredOrders.map((order) => (
+                <tr key={order.id}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={selectedOrders.includes(
+                        order.id
+                      )}
+                      onChange={() =>
+                        toggleSelect(order.id)
+                      }
+                    />
+                  </td>
+
+                  <td>
+                    <div className="seller-order-number">
+                      <strong>{order.id}</strong>
+                      <small>{order.time}</small>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div className="seller-order-buyer">
+                      <span>
+                        {order.buyer.charAt(0)}
+                      </span>
+
+                      <div>
+                        <strong>{order.buyer}</strong>
+                        <small>{order.email}</small>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div className="seller-order-product">
+                      <strong>{order.product}</strong>
+                      <small>
+                        {order.items} item
+                      </small>
+                    </div>
+                  </td>
+
+                  <td>
+                    <strong>
+                      {rupiah(order.total)}
+                    </strong>
+                  </td>
+
+                  <td>
+                    <div className="seller-order-payment">
+                      <strong>{order.payment}</strong>
+                      <span
+                        className={`payment-${order.paymentStatus
+                          .toLowerCase()
+                          .replace(/\s/g, "-")}`}
+                      >
+                        {order.paymentStatus}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td>
+                    <select
+                      className={`seller-order-status-select status-${order.status
+                        .toLowerCase()
+                        .replace(/\s/g, "-")}`}
+                      value={order.status}
+                      onChange={(event) =>
+                        updateOrderStatus(
+                          order.id,
+                          event.target.value
+                        )
+                      }
+                    >
+                      <option value="Perlu Diproses">
+                        Perlu Diproses
+                      </option>
+                      <option value="Diproses">
+                        Diproses
+                      </option>
+                      <option value="Menunggu Pembayaran">
+                        Menunggu Pembayaran
+                      </option>
+                      <option value="Selesai">
+                        Selesai
+                      </option>
+                      <option value="Dibatalkan">
+                        Dibatalkan
+                      </option>
+                    </select>
+                  </td>
+
+                  <td>
+                    <div className="seller-order-actions">
+                      <button
+                        type="button"
+                        title="Detail"
+                        onClick={() =>
+                          setSelectedOrder(order)
+                        }
+                      >
+                        <i className="fi fi-rr-eye" />
+                      </button>
+
+                      <button
+                        type="button"
+                        title="Invoice"
+                        onClick={() =>
+                          showNotice(
+                            `Invoice ${order.id} siap dibuat.`
+                          )
+                        }
+                      >
+                        <i className="fi fi-rr-receipt" />
+                      </button>
+
+                      <button
+                        type="button"
+                        title="Chat Buyer"
+                        onClick={() =>
+                          showNotice(
+                            `Membuka chat dengan ${order.buyer}.`
+                          )
+                        }
+                      >
+                        <i className="fi fi-rr-comment-alt" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {filteredOrders.length === 0 && (
+          <div className="seller-orders-empty">
+            <i className="fi fi-rr-receipt" />
+            <h4>Pesanan tidak ditemukan</h4>
+            <p>
+              Tidak ada transaksi yang sesuai dengan filter.
+            </p>
+          </div>
+        )}
+      </section>
+
+      {selectedOrder && (
+        <div
+          className="seller-order-detail-backdrop"
+          onClick={() => setSelectedOrder(null)}
+        >
+          <aside
+            className="seller-order-detail"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
+            <div className="seller-order-detail-head">
+              <div>
+                <span>DETAIL PESANAN</span>
+                <h3>{selectedOrder.id}</h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedOrder(null)
+                }
+              >
+                <i className="fi fi-rr-cross" />
+              </button>
+            </div>
+
+            <div className="seller-order-detail-status">
+              <span />
+              {selectedOrder.status}
+            </div>
+
+            <div className="seller-order-detail-section">
+              <span>BUYER</span>
+              <strong>{selectedOrder.buyer}</strong>
+              <small>{selectedOrder.email}</small>
+            </div>
+
+            <div className="seller-order-detail-section">
+              <span>PRODUK</span>
+              <strong>{selectedOrder.product}</strong>
+              <small>
+                {selectedOrder.items} item
+              </small>
+            </div>
+
+            <div className="seller-order-detail-grid">
+              <div>
+                <small>Total</small>
+                <strong>
+                  {rupiah(selectedOrder.total)}
+                </strong>
+              </div>
+
+              <div>
+                <small>Pembayaran</small>
+                <strong>
+                  {selectedOrder.payment}
+                </strong>
+              </div>
+            </div>
+
+            <div className="seller-order-timeline">
+              <span>RIWAYAT PESANAN</span>
+
+              <div>
+                <i className="fi fi-rr-check-circle" />
+                <p>
+                  <strong>Pesanan dibuat</strong>
+                  <small>{selectedOrder.time}</small>
+                </p>
+              </div>
+
+              <div>
+                <i className="fi fi-rr-credit-card" />
+                <p>
+                  <strong>
+                    Status pembayaran
+                  </strong>
+                  <small>
+                    {selectedOrder.paymentStatus}
+                  </small>
+                </p>
+              </div>
+
+              <div>
+                <i className="fi fi-rr-box" />
+                <p>
+                  <strong>Status pesanan</strong>
+                  <small>
+                    {selectedOrder.status}
+                  </small>
+                </p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 function RoleDashboard({
   role,
   user,
