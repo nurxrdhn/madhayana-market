@@ -62,7 +62,7 @@ const roles = [
   {
     key: "reseller",
     title: "Seller",
-    code: "RSL",
+    code: "SLR",
     icon: "fi fi-rr-shop",
     description: "Jual produk dan kelola perkembangan toko digital.",
     className: "reseller",
@@ -486,6 +486,7 @@ function AuthPage({ role, login, register, loginGoogle, onBack }) {
         const profile = await login({
           email: form.email,
           password: form.password,
+          role: role.key,
         });
 
         if (operatorMode && profile.role !== "operator") {

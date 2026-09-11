@@ -41,7 +41,7 @@ function normalizeRole(role) {
 function createUserCode(role, uid) {
   const prefixes = {
     buyer: "BYR",
-    reseller: "RSL",
+    reseller: "SLR",
     operator: "OPR",
   };
 
