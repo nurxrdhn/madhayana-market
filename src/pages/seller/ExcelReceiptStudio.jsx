@@ -491,24 +491,31 @@ export default function ExcelReceiptStudio({
         templateCells: [],
       });
 
-      await savePlatformReceiptTemplate({
-        sellerName:
-          user?.name ||
-          user?.displayName ||
-          "Seller",
-        templateName:
-          templateName.trim(),
-        fileName,
-        data: computedData,
-        fields: fieldDefinitions,
-        category: "Struk",
-      });
+      try {
+        await savePlatformReceiptTemplate({
+          sellerName:
+            user?.name ||
+            user?.displayName ||
+            "Seller",
+          templateName:
+            templateName.trim(),
+          fileName,
+          data: computedData,
+          fields: fieldDefinitions,
+          category: "Struk",
+        });
+      } catch (cloudError) {
+        console.warn(
+          "Cloud template gagal disimpan, menggunakan penyimpanan lokal:",
+          cloudError
+        );
+      }
 
       setSelectedTemplateId(saved.id);
       refreshSavedTemplates();
 
       setManagerMessage(
-        "Template berhasil disimpan dan dapat digunakan oleh Buyer."
+        "Template berhasil disimpan."
       );
     } catch (saveError) {
       console.error(
