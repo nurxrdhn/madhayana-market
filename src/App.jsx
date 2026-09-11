@@ -39,14 +39,14 @@ const slides = [
     label: "TUMBUH BERSAMA",
     title: "Bangun dan kembangkan toko digitalmu",
     description:
-      "Reseller dapat mengelola produk, pesanan, promosi, pendapatan, serta performa toko melalui satu dashboard.",
+      "Seller dapat mengelola produk, pesanan, promosi, pendapatan, serta performa toko melalui satu dashboard.",
   },
   {
     icon: "fi fi-rr-users-alt",
     label: "MULAI SEKARANG",
     title: "Pilih cara kamu menggunakan Madhayana",
     description:
-      "Masuk sebagai buyer, reseller, operator, atau jelajahi produk terlebih dahulu sebagai guest.",
+      "Masuk sebagai Buyer, Seller, Operator, atau jelajahi produk terlebih dahulu sebagai Guest.",
   },
 ];
 
@@ -61,7 +61,7 @@ const roles = [
   },
   {
     key: "reseller",
-    title: "Reseller",
+    title: "Seller",
     code: "RSL",
     icon: "fi fi-rr-shop",
     description: "Jual produk dan kelola perkembangan toko digital.",
@@ -105,7 +105,7 @@ const dashboardData = {
     ],
   },
   reseller: {
-    title: "Dashboard Reseller",
+    title: "Dashboard Seller",
     subtitle: "Kelola penjualan dan perkembangan tokomu.",
     icon: "fi fi-rr-shop",
     menus: [
@@ -1325,7 +1325,7 @@ const [selectedStore,setSelectedStore]=useState(null);
 
             if (!template) {
               showNotice(
-                "Template default reseller belum tersedia."
+                "Template default seller belum tersedia."
               );
               return;
             }
@@ -1361,15 +1361,15 @@ const [selectedStore,setSelectedStore]=useState(null);
               sellerName:
                 templateData.NAMA_RESELLER ||
                 template.sellerName ||
-                "Madhayana Reseller",
+                "Madhayana Seller",
 
               sellerAddress:
                 templateData.ALAMAT_RESELLER ||
-                "Alamat reseller",
+                "Alamat seller",
 
               sellerContact:
                 templateData.KONTAK_RESELLER ||
-                "Kontak reseller",
+                "Kontak seller",
 
               logoURL:
                 templateData.LOGO_RESELLER || "",

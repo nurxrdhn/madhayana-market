@@ -5433,3 +5433,74 @@ h3,
     font-size: 27px;
   }
 }
+
+/* =========================================================
+   AUTH ROLE COLOR SYNC
+   Seluruh aksen mengikuti role aktif
+   ========================================================= */
+
+.auth-slide-page .modern-button.primary {
+  background: var(--auth) !important;
+  border-color: var(--auth) !important;
+}
+
+.auth-slide-page .modern-button.primary:hover {
+  background: var(--auth-dark) !important;
+}
+
+.auth-slide-page .modern-auth-card > .modern-eyebrow {
+  color: var(--auth) !important;
+  background: color-mix(in srgb, var(--auth) 9%, white) !important;
+}
+
+.auth-slide-page .modern-switch-auth {
+  color: var(--auth) !important;
+}
+
+.auth-slide-page .modern-field > div:focus-within {
+  border-color: var(--auth) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--auth) 9%, transparent) !important;
+}
+
+.auth-slide-page .modern-auth-card a,
+.auth-slide-page .modern-auth-card button:not(.modern-google-button):not(.modern-button) {
+  accent-color: var(--auth);
+}
+
+/* Madhayana role identity */
+.auth-buyer {
+  --auth: #175cff;
+  --auth-dark: #0b3498;
+}
+
+.auth-reseller {
+  --auth: #09a574;
+  --auth-dark: #056b4e;
+}
+
+.auth-operator {
+  --auth: #e14e4e;
+  --auth-dark: #932424;
+}
+
+.auth-slide-page .modern-button.primary.full {
+  background: var(--auth) !important;
+  border-color: var(--auth) !important;
+}
+
+.auth-slide-page .modern-button.primary.full:hover {
+  background: var(--auth-dark) !important;
+}
+
+.auth-slide-page .modern-auth-card > .modern-eyebrow {
+  color: var(--auth) !important;
+  background: color-mix(in srgb, var(--auth) 9%, white) !important;
+}
+
+.auth-slide-page .modern-switch-auth {
+  color: var(--auth) !important;
+}
+
+.auth-slide-page .modern-field > div:focus-within {
+  border-color: var(--auth) !important;
+}
