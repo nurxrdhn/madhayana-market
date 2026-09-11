@@ -3861,6 +3861,9 @@ function RoleDashboard({
               onOpenExcelStudio={onOpenExcelStudio}
             />
           ) : role === "reseller" &&
+            activeMenu === "Produk" ? (
+            <SellerProducts />
+          ) : role === "reseller" &&
             activeMenu === "Profil Toko" ? (
             <StoreProfileEditor user={user} />
           ) : (
