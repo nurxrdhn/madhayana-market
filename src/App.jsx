@@ -4500,6 +4500,650 @@ function SellerOrders() {
 }
 
 
+
+function SellerWallet() {
+  const initialTransactions = [
+    {
+      id: "TRX-20260911-001",
+      type: "Penjualan",
+      title: "Premium React Dashboard",
+      description: "Pesanan ORD-20260911-001",
+      amount: 149000,
+      direction: "in",
+      status: "Berhasil",
+      date: "11 Sep 2026 · 12:42",
+    },
+    {
+      id: "TRX-20260911-002",
+      type: "Penjualan",
+      title: "UI Kit Mobile Banking",
+      description: "Pesanan ORD-20260911-002",
+      amount: 198000,
+      direction: "in",
+      status: "Berhasil",
+      date: "11 Sep 2026 · 11:18",
+    },
+    {
+      id: "TRX-20260911-003",
+      type: "Biaya Admin",
+      title: "Biaya layanan platform",
+      description: "Pesanan ORD-20260911-002",
+      amount: 7500,
+      direction: "out",
+      status: "Berhasil",
+      date: "11 Sep 2026 · 11:18",
+    },
+    {
+      id: "TRX-20260910-004",
+      type: "Penarikan",
+      title: "Pencairan ke BCA",
+      description: "•••• 8821",
+      amount: 1250000,
+      direction: "out",
+      status: "Diproses",
+      date: "10 Sep 2026 · 19:06",
+    },
+    {
+      id: "TRX-20260910-005",
+      type: "Refund",
+      title: "Pengembalian dana Buyer",
+      description: "Pesanan ORD-20260910-005",
+      amount: 129000,
+      direction: "out",
+      status: "Berhasil",
+      date: "10 Sep 2026 · 18:44",
+    },
+  ];
+
+  const [transactions] = useState(initialTransactions);
+  const [searchWallet, setSearchWallet] = useState("");
+  const [typeFilter, setTypeFilter] = useState("Semua");
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [notice, setNotice] = useState("");
+
+  const availableBalance = 4625000;
+  const heldBalance = 985000;
+  const monthIncome = 12850000;
+  const monthWithdraw = 6750000;
+
+  const rupiah = (value) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(value);
+
+  const showNotice = (message) => {
+    setNotice(message);
+    window.setTimeout(() => setNotice(""), 2600);
+  };
+
+  const filteredTransactions = transactions.filter((trx) => {
+    const query = searchWallet.trim().toLowerCase();
+
+    const searchMatch =
+      !query ||
+      trx.id.toLowerCase().includes(query) ||
+      trx.title.toLowerCase().includes(query) ||
+      trx.description.toLowerCase().includes(query);
+
+    const typeMatch =
+      typeFilter === "Semua" ||
+      trx.type === typeFilter;
+
+    return searchMatch && typeMatch;
+  });
+
+  const exportTransactions = () => {
+    const headers = [
+      "ID",
+      "Jenis",
+      "Judul",
+      "Deskripsi",
+      "Nominal",
+      "Arah",
+      "Status",
+      "Tanggal",
+    ];
+
+    const rows = transactions.map((trx) => [
+      trx.id,
+      trx.type,
+      trx.title,
+      trx.description,
+      trx.amount,
+      trx.direction,
+      trx.status,
+      trx.date,
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row
+          .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+          .join(",")
+      )
+      .join("\n");
+
+    const blob = new Blob([csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = "Riwayat-Saldo-Seller-Madhayana.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+
+    showNotice("Riwayat saldo berhasil diekspor.");
+  };
+
+  const handleWithdraw = () => {
+    const amount = Number(
+      String(withdrawAmount).replace(/[^\d]/g, "")
+    );
+
+    if (!amount || amount < 50000) {
+      showNotice("Minimal penarikan Rp50.000.");
+      return;
+    }
+
+    if (amount > availableBalance) {
+      showNotice("Saldo tersedia tidak mencukupi.");
+      return;
+    }
+
+    showNotice(
+      `Permintaan penarikan ${rupiah(amount)} berhasil dibuat.`
+    );
+
+    setWithdrawAmount("");
+    setShowWithdraw(false);
+  };
+
+  return (
+    <div className="seller-wallet-page">
+      {notice && (
+        <div className="seller-wallet-notice">
+          <i className="fi fi-rr-check-circle" />
+          {notice}
+        </div>
+      )}
+
+      <section className="seller-wallet-hero">
+        <div>
+          <span>WALLET & FINANCE CENTER</span>
+          <h2>Kelola saldo dan pencairan.</h2>
+          <p>
+            Pantau arus dana, saldo tersedia, dana tertahan,
+            biaya, refund, dan pencairan dalam satu pusat keuangan.
+          </p>
+        </div>
+
+        <div className="seller-wallet-hero-actions">
+          <button
+            type="button"
+            onClick={exportTransactions}
+          >
+            <i className="fi fi-rr-file-export" />
+            Ekspor Riwayat
+          </button>
+
+          <button
+            type="button"
+            className="primary"
+            onClick={() => setShowWithdraw(true)}
+          >
+            <i className="fi fi-rr-money-bill-wave" />
+            Tarik Saldo
+          </button>
+        </div>
+      </section>
+
+      <section className="seller-wallet-balance-grid">
+        <article className="seller-wallet-balance-card primary">
+          <div className="seller-wallet-card-top">
+            <span>
+              <i className="fi fi-rr-wallet" />
+            </span>
+
+            <small>SALDO TERSEDIA</small>
+          </div>
+
+          <strong>{rupiah(availableBalance)}</strong>
+
+          <p>
+            Bisa ditarik ke rekening utama.
+          </p>
+
+          <div className="seller-wallet-card-footer">
+            <span>
+              <i className="fi fi-rr-shield-check" />
+              Dana aman
+            </span>
+
+            <button
+              type="button"
+              onClick={() => setShowWithdraw(true)}
+            >
+              Tarik
+            </button>
+          </div>
+        </article>
+
+        <article className="seller-wallet-balance-card">
+          <div className="seller-wallet-card-top">
+            <span>
+              <i className="fi fi-rr-time-quarter-past" />
+            </span>
+
+            <small>SALDO TERTAHAN</small>
+          </div>
+
+          <strong>{rupiah(heldBalance)}</strong>
+
+          <p>
+            Menunggu penyelesaian transaksi.
+          </p>
+        </article>
+
+        <article className="seller-wallet-balance-card">
+          <div className="seller-wallet-card-top">
+            <span>
+              <i className="fi fi-rr-chart-histogram" />
+            </span>
+
+            <small>PENDAPATAN BULAN INI</small>
+          </div>
+
+          <strong>{rupiah(monthIncome)}</strong>
+
+          <p>
+            Naik 12,8% dari bulan lalu.
+          </p>
+        </article>
+
+        <article className="seller-wallet-balance-card">
+          <div className="seller-wallet-card-top">
+            <span>
+              <i className="fi fi-rr-bank" />
+            </span>
+
+            <small>PENCAIRAN BULAN INI</small>
+          </div>
+
+          <strong>{rupiah(monthWithdraw)}</strong>
+
+          <p>
+            Total dana yang sudah ditarik.
+          </p>
+        </article>
+      </section>
+
+      <section className="seller-wallet-middle">
+        <article className="seller-wallet-cashflow">
+          <div className="seller-wallet-section-head">
+            <div>
+              <span>ARUS DANA</span>
+              <h3>Ringkasan Keuangan</h3>
+            </div>
+
+            <select defaultValue="30">
+              <option value="7">7 Hari</option>
+              <option value="30">30 Hari</option>
+              <option value="90">90 Hari</option>
+            </select>
+          </div>
+
+          <div className="seller-wallet-cashflow-summary">
+            <div>
+              <small>Dana Masuk</small>
+              <strong>{rupiah(13765000)}</strong>
+              <span className="positive">+14,2%</span>
+            </div>
+
+            <div>
+              <small>Dana Keluar</small>
+              <strong>{rupiah(6995000)}</strong>
+              <span className="negative">+3,6%</span>
+            </div>
+
+            <div>
+              <small>Netto</small>
+              <strong>{rupiah(6770000)}</strong>
+              <span className="positive">+18,1%</span>
+            </div>
+          </div>
+
+          <div className="seller-wallet-bars">
+            {[44, 62, 53, 78, 68, 88, 74].map((height, index) => (
+              <div key={index}>
+                <span style={{ height: `${height}%` }} />
+                <small>
+                  {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"][index]}
+                </small>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="seller-wallet-bank-card">
+          <div className="seller-wallet-section-head">
+            <div>
+              <span>REKENING PENCAIRAN</span>
+              <h3>Rekening Utama</h3>
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                showNotice("Pengaturan rekening akan dibuka.")
+              }
+            >
+              <i className="fi fi-rr-edit" />
+            </button>
+          </div>
+
+          <div className="seller-wallet-bank-visual">
+            <span>BCA</span>
+
+            <div>
+              <small>Nomor Rekening</small>
+              <strong>•••• •••• 8821</strong>
+            </div>
+
+            <div>
+              <small>Nama Pemilik</small>
+              <strong>Nur Ramadhan</strong>
+            </div>
+          </div>
+
+          <div className="seller-wallet-bank-status">
+            <i className="fi fi-rr-shield-check" />
+
+            <div>
+              <strong>Rekening Terverifikasi</strong>
+              <small>
+                Siap menerima pencairan otomatis.
+              </small>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section className="seller-wallet-tools">
+        <button
+          type="button"
+          onClick={() =>
+            showNotice("Pencairan otomatis akan diaktifkan.")
+          }
+        >
+          <i className="fi fi-rr-automation" />
+          <div>
+            <strong>Auto Payout</strong>
+            <small>Pencairan otomatis</small>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            showNotice("Analisis arus kas siap dikembangkan.")
+          }
+        >
+          <i className="fi fi-rr-chart-line-up" />
+          <div>
+            <strong>Prediksi Cashflow</strong>
+            <small>Estimasi saldo mendatang</small>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            showNotice("Laporan pajak siap dikembangkan.")
+          }
+        >
+          <i className="fi fi-rr-document-signed" />
+          <div>
+            <strong>Laporan Keuangan</strong>
+            <small>Rekap otomatis</small>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            showNotice("Pusat refund siap dikembangkan.")
+          }
+        >
+          <i className="fi fi-rr-undo" />
+          <div>
+            <strong>Refund</strong>
+            <small>Pengembalian dana</small>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            showNotice("Proteksi saldo siap dikembangkan.")
+          }
+        >
+          <i className="fi fi-rr-shield-check" />
+          <div>
+            <strong>Proteksi Saldo</strong>
+            <small>Keamanan transaksi</small>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            showNotice("Pusat biaya siap dikembangkan.")
+          }
+        >
+          <i className="fi fi-rr-receipt" />
+          <div>
+            <strong>Rincian Biaya</strong>
+            <small>Admin & layanan</small>
+          </div>
+        </button>
+      </section>
+
+      <section className="seller-wallet-history">
+        <div className="seller-wallet-section-head">
+          <div>
+            <span>TRANSAKSI</span>
+            <h3>Riwayat Saldo</h3>
+          </div>
+
+          <strong>
+            {filteredTransactions.length} transaksi
+          </strong>
+        </div>
+
+        <div className="seller-wallet-toolbar">
+          <div>
+            <i className="fi fi-rr-search" />
+
+            <input
+              value={searchWallet}
+              onChange={(event) =>
+                setSearchWallet(event.target.value)
+              }
+              placeholder="Cari transaksi..."
+            />
+          </div>
+
+          <select
+            value={typeFilter}
+            onChange={(event) =>
+              setTypeFilter(event.target.value)
+            }
+          >
+            <option value="Semua">Semua Jenis</option>
+            <option value="Penjualan">Penjualan</option>
+            <option value="Penarikan">Penarikan</option>
+            <option value="Refund">Refund</option>
+            <option value="Biaya Admin">Biaya Admin</option>
+          </select>
+        </div>
+
+        <div className="seller-wallet-transaction-list">
+          {filteredTransactions.map((trx) => (
+            <article key={trx.id}>
+              <span
+                className={`seller-wallet-trx-icon ${trx.direction}`}
+              >
+                <i
+                  className={
+                    trx.direction === "in"
+                      ? "fi fi-rr-arrow-down-left"
+                      : "fi fi-rr-arrow-up-right"
+                  }
+                />
+              </span>
+
+              <div className="seller-wallet-trx-main">
+                <strong>{trx.title}</strong>
+                <small>
+                  {trx.description} · {trx.id}
+                </small>
+              </div>
+
+              <div className="seller-wallet-trx-type">
+                <span>{trx.type}</span>
+                <small>{trx.date}</small>
+              </div>
+
+              <div className="seller-wallet-trx-status">
+                <span
+                  className={`wallet-status-${trx.status
+                    .toLowerCase()
+                    .replace(/\s/g, "-")}`}
+                >
+                  {trx.status}
+                </span>
+              </div>
+
+              <strong
+                className={`seller-wallet-trx-amount ${trx.direction}`}
+              >
+                {trx.direction === "in" ? "+" : "-"}
+                {rupiah(trx.amount)}
+              </strong>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {showWithdraw && (
+        <div
+          className="seller-wallet-modal-backdrop"
+          onClick={() => setShowWithdraw(false)}
+        >
+          <div
+            className="seller-wallet-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="seller-wallet-modal-head">
+              <div>
+                <span>PENCAIRAN</span>
+                <h3>Tarik Saldo</h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowWithdraw(false)}
+              >
+                <i className="fi fi-rr-cross" />
+              </button>
+            </div>
+
+            <div className="seller-wallet-modal-balance">
+              <small>Saldo tersedia</small>
+              <strong>{rupiah(availableBalance)}</strong>
+            </div>
+
+            <label>
+              Nominal Penarikan
+              <div className="seller-wallet-input-money">
+                <span>Rp</span>
+
+                <input
+                  value={withdrawAmount}
+                  onChange={(event) =>
+                    setWithdrawAmount(event.target.value)
+                  }
+                  placeholder="0"
+                  inputMode="numeric"
+                />
+              </div>
+            </label>
+
+            <div className="seller-wallet-quick-amount">
+              {[500000, 1000000, 2000000, availableBalance].map(
+                (amount) => (
+                  <button
+                    key={amount}
+                    type="button"
+                    onClick={() =>
+                      setWithdrawAmount(String(amount))
+                    }
+                  >
+                    {amount === availableBalance
+                      ? "Semua"
+                      : rupiah(amount)}
+                  </button>
+                )
+              )}
+            </div>
+
+            <div className="seller-wallet-withdraw-bank">
+              <span>BCA</span>
+
+              <div>
+                <strong>•••• 8821</strong>
+                <small>Nur Ramadhan</small>
+              </div>
+
+              <i className="fi fi-rr-shield-check" />
+            </div>
+
+            <div className="seller-wallet-withdraw-info">
+              <div>
+                <span>Biaya pencairan</span>
+                <strong>Rp0</strong>
+              </div>
+
+              <div>
+                <span>Estimasi masuk</span>
+                <strong>1–10 menit</strong>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="seller-wallet-withdraw-submit"
+              onClick={handleWithdraw}
+            >
+              Tarik Saldo
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 function RoleDashboard({
   role,
   user,
@@ -4659,6 +5303,9 @@ function RoleDashboard({
           ) : role === "reseller" &&
             activeMenu === "Pesanan" ? (
             <SellerOrders />
+          ) : role === "reseller" &&
+            activeMenu === "Saldo" ? (
+            <SellerWallet />
           ) : role === "reseller" &&
             activeMenu === "Profil Toko" ? (
             <StoreProfileEditor user={user} />
