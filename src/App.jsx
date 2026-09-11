@@ -2370,6 +2370,383 @@ function BuyerEmpty({
   );
 }
 
+
+function SellerSummary({ user, onOpenExcelStudio }) {
+  const firstName =
+    user?.name?.trim().split(" ")[0] || "Seller";
+
+  const summaryStats = [
+    {
+      label: "Penjualan Hari Ini",
+      value: "Rp1.250.000",
+      change: "+12,5%",
+      icon: "fi fi-rr-chart-histogram",
+      type: "positive",
+    },
+    {
+      label: "Pesanan Baru",
+      value: "18",
+      change: "8 perlu diproses",
+      icon: "fi fi-rr-shopping-cart",
+      type: "neutral",
+    },
+    {
+      label: "Saldo Tersedia",
+      value: "Rp4,6 jt",
+      change: "Siap ditarik",
+      icon: "fi fi-rr-wallet",
+      type: "neutral",
+    },
+    {
+      label: "Produk Aktif",
+      value: "42",
+      change: "3 stok menipis",
+      icon: "fi fi-rr-box-open",
+      type: "warning",
+    },
+  ];
+
+  const recentOrders = [
+    {
+      id: "ORD-0911-001",
+      buyer: "Budi Santoso",
+      amount: "Rp125.000",
+      status: "Perlu Diproses",
+      statusClass: "waiting",
+    },
+    {
+      id: "ORD-0911-002",
+      buyer: "Andi Pratama",
+      amount: "Rp80.000",
+      status: "Diproses",
+      statusClass: "process",
+    },
+    {
+      id: "ORD-0911-003",
+      buyer: "Rina Maharani",
+      amount: "Rp210.000",
+      status: "Selesai",
+      statusClass: "done",
+    },
+    {
+      id: "ORD-0911-004",
+      buyer: "Dimas Saputra",
+      amount: "Rp65.000",
+      status: "Selesai",
+      statusClass: "done",
+    },
+  ];
+
+  const bestProducts = [
+    { name: "Produk Digital A", sold: 120, revenue: "Rp3,6 jt" },
+    { name: "Produk Digital B", sold: 98, revenue: "Rp2,8 jt" },
+    { name: "Produk Digital C", sold: 76, revenue: "Rp2,1 jt" },
+  ];
+
+  const chart = [38, 52, 44, 68, 58, 82, 74];
+
+  return (
+    <div className="seller-summary">
+      <section className="seller-summary-welcome">
+        <div>
+          <span className="seller-summary-kicker">
+            RINGKASAN HARI INI
+          </span>
+
+          <h2>
+            Selamat datang, {firstName}
+            <span>.</span>
+          </h2>
+
+          <p>
+            Pantau penjualan, pesanan, produk, dan perkembangan
+            tokomu dalam satu tampilan.
+          </p>
+        </div>
+
+        <div className="seller-store-status">
+          <span className="seller-status-dot" />
+          <div>
+            <small>Status Toko</small>
+            <strong>Aktif</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className="seller-summary-stats">
+        {summaryStats.map((item) => (
+          <article key={item.label}>
+            <div className="seller-stat-top">
+              <span className="seller-stat-icon">
+                <i className={item.icon} />
+              </span>
+
+              <span
+                className={`seller-stat-change ${item.type}`}
+              >
+                {item.change}
+              </span>
+            </div>
+
+            <p>{item.label}</p>
+            <strong>{item.value}</strong>
+          </article>
+        ))}
+      </section>
+
+      <section className="seller-summary-grid">
+        <article className="seller-summary-card seller-sales-card">
+          <div className="seller-card-heading">
+            <div>
+              <span className="seller-card-kicker">
+                PERFORMA
+              </span>
+              <h3>Penjualan</h3>
+            </div>
+
+            <select defaultValue="7">
+              <option value="7">7 Hari</option>
+              <option value="30">30 Hari</option>
+            </select>
+          </div>
+
+          <div className="seller-sales-total">
+            <div>
+              <small>Total Penjualan</small>
+              <strong>Rp8.750.000</strong>
+            </div>
+
+            <span>
+              <i className="fi fi-rr-arrow-trend-up" />
+              12,5%
+            </span>
+          </div>
+
+          <div className="seller-mini-chart">
+            {chart.map((height, index) => (
+              <div
+                key={index}
+                className="seller-chart-column"
+              >
+                <div
+                  className="seller-chart-bar"
+                  style={{ height: `${height}%` }}
+                />
+                <small>
+                  {
+                    ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"][
+                      index
+                    ]
+                  }
+                </small>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="seller-summary-card">
+          <div className="seller-card-heading">
+            <div>
+              <span className="seller-card-kicker">
+                PESANAN
+              </span>
+              <h3>Status Pesanan</h3>
+            </div>
+
+            <span className="seller-card-total">55</span>
+          </div>
+
+          <div className="seller-order-statuses">
+            <div>
+              <span className="status-symbol waiting">
+                <i className="fi fi-rr-time-quarter-past" />
+              </span>
+              <div>
+                <strong>8</strong>
+                <small>Perlu Diproses</small>
+              </div>
+            </div>
+
+            <div>
+              <span className="status-symbol process">
+                <i className="fi fi-rr-box" />
+              </span>
+              <div>
+                <strong>5</strong>
+                <small>Diproses</small>
+              </div>
+            </div>
+
+            <div>
+              <span className="status-symbol done">
+                <i className="fi fi-rr-check-circle" />
+              </span>
+              <div>
+                <strong>40</strong>
+                <small>Selesai</small>
+              </div>
+            </div>
+
+            <div>
+              <span className="status-symbol cancelled">
+                <i className="fi fi-rr-cross-circle" />
+              </span>
+              <div>
+                <strong>2</strong>
+                <small>Dibatalkan</small>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section className="seller-summary-grid lower">
+        <article className="seller-summary-card seller-orders-card">
+          <div className="seller-card-heading">
+            <div>
+              <span className="seller-card-kicker">
+                TERBARU
+              </span>
+              <h3>Pesanan Terbaru</h3>
+            </div>
+
+            <button type="button" className="seller-text-button">
+              Lihat Semua
+              <i className="fi fi-rr-arrow-right" />
+            </button>
+          </div>
+
+          <div className="seller-orders-list">
+            {recentOrders.map((order) => (
+              <div className="seller-order-row" key={order.id}>
+                <div className="seller-order-id">
+                  <span>
+                    <i className="fi fi-rr-receipt" />
+                  </span>
+                  <div>
+                    <strong>{order.id}</strong>
+                    <small>{order.buyer}</small>
+                  </div>
+                </div>
+
+                <strong className="seller-order-amount">
+                  {order.amount}
+                </strong>
+
+                <span
+                  className={`seller-order-badge ${order.statusClass}`}
+                >
+                  {order.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="seller-summary-card">
+          <div className="seller-card-heading">
+            <div>
+              <span className="seller-card-kicker">
+                PRODUK
+              </span>
+              <h3>Produk Terlaris</h3>
+            </div>
+          </div>
+
+          <div className="seller-best-products">
+            {bestProducts.map((product, index) => (
+              <div key={product.name}>
+                <span className="seller-product-rank">
+                  {index + 1}
+                </span>
+
+                <div>
+                  <strong>{product.name}</strong>
+                  <small>{product.sold} terjual</small>
+                </div>
+
+                <strong>{product.revenue}</strong>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="seller-summary-grid bottom">
+        <article className="seller-summary-card seller-alert-card">
+          <div className="seller-card-heading">
+            <div>
+              <span className="seller-card-kicker">
+                PERHATIAN
+              </span>
+              <h3>Perlu Tindakan</h3>
+            </div>
+          </div>
+
+          <div className="seller-alert-list">
+            <div>
+              <span className="seller-alert-icon warning">
+                <i className="fi fi-rr-triangle-warning" />
+              </span>
+              <div>
+                <strong>3 produk stok menipis</strong>
+                <small>Periksa persediaan produkmu.</small>
+              </div>
+            </div>
+
+            <div>
+              <span className="seller-alert-icon danger">
+                <i className="fi fi-rr-box-open" />
+              </span>
+              <div>
+                <strong>1 produk kehabisan stok</strong>
+                <small>Perbarui stok agar dapat dijual kembali.</small>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article className="seller-summary-card seller-quick-card">
+          <div className="seller-card-heading">
+            <div>
+              <span className="seller-card-kicker">
+                AKSES CEPAT
+              </span>
+              <h3>Aksi Cepat</h3>
+            </div>
+          </div>
+
+          <div className="seller-quick-actions">
+            <button type="button">
+              <i className="fi fi-rr-add" />
+              <span>Tambah Produk</span>
+            </button>
+
+            <button type="button">
+              <i className="fi fi-rr-shopping-cart" />
+              <span>Pesanan</span>
+            </button>
+
+            <button type="button">
+              <i className="fi fi-rr-wallet" />
+              <span>Tarik Saldo</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenExcelStudio}
+            >
+              <i className="fi fi-rr-receipt" />
+              <span>Template Struk</span>
+            </button>
+          </div>
+        </article>
+      </section>
+    </div>
+  );
+}
+
+
 function RoleDashboard({
   role,
   user,
@@ -2518,7 +2895,13 @@ function RoleDashboard({
           </div>
 
           {role === "reseller" &&
-          activeMenu === "Profil Toko" ? (
+          activeMenu === "Ringkasan" ? (
+            <SellerSummary
+              user={user}
+              onOpenExcelStudio={onOpenExcelStudio}
+            />
+          ) : role === "reseller" &&
+            activeMenu === "Profil Toko" ? (
             <StoreProfileEditor user={user} />
           ) : (
             <section className="modern-product-section">
