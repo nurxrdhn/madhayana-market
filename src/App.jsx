@@ -4657,6 +4657,9 @@ function RoleDashboard({
             activeMenu === "Produk" ? (
             <SellerProducts />
           ) : role === "reseller" &&
+            activeMenu === "Pesanan" ? (
+            <SellerOrders />
+          ) : role === "reseller" &&
             activeMenu === "Profil Toko" ? (
             <StoreProfileEditor user={user} />
           ) : (
