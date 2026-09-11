@@ -5801,3 +5801,64 @@ h3,
     font-size: 34px;
   }
 }
+
+/* SELLER EXCEL TEMPLATE ACTIONS */
+
+.dashboard-reseller .seller-template-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.dashboard-reseller .seller-template-download {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 20px;
+  border-radius: 14px;
+  text-decoration: none;
+
+  background: rgba(255, 255, 255, 0.96);
+  color: #087457;
+
+  border: 1px solid rgba(255, 255, 255, 0.35);
+
+  font-weight: 750;
+  font-size: 14px;
+
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.12);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.dashboard-reseller .seller-template-download:hover {
+  transform: translateY(-2px);
+  background: #ffffff;
+
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.16);
+}
+
+.dashboard-reseller .seller-template-download i {
+  font-size: 17px;
+}
+
+@media (max-width: 700px) {
+  .dashboard-reseller .seller-template-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dashboard-reseller .seller-template-download,
+  .dashboard-reseller .seller-template-actions button {
+    width: 100%;
+  }
+}
