@@ -2505,7 +2505,7 @@ function RoleDashboard({
               <div className="modern-section-header">
                 <div>
                   <span className="modern-eyebrow">
-                    DASHBOARD {role.toUpperCase()}
+                    DASHBOARD {role === "reseller" ? "SELLER" : role.toUpperCase()}
                   </span>
 
                   <h2>{activeMenu}</h2>
