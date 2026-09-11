@@ -2379,6 +2379,15 @@ function RoleDashboard({
   const config =
     dashboardData[role] || dashboardData.guest;
 
+  const roleLabel =
+    role === "reseller"
+      ? "Seller"
+      : role === "buyer"
+        ? "Buyer"
+        : role === "operator"
+          ? "Operator"
+          : "Guest";
+
   const [activeMenu, setActiveMenu] = useState(
     config.menus[0][1]
   );
@@ -2417,7 +2426,7 @@ function RoleDashboard({
 
             <div>
               <strong>{user.name}</strong>
-              <span>{role}</span>
+              <span>{roleLabel}</span>
             </div>
           </div>
         </div>
@@ -2427,7 +2436,7 @@ function RoleDashboard({
         <aside className="modern-sidebar">
           <div className="modern-role-badge">
             <i className={config.icon} />
-            <span>{role}</span>
+            <span>{roleLabel}</span>
           </div>
 
           <nav>
@@ -2469,14 +2478,25 @@ function RoleDashboard({
               <p>{config.subtitle}</p>
 
               {role === "reseller" && (
-                <button
-                  type="button"
-                  className="modern-button light"
-                  onClick={onOpenExcelStudio}
-                >
-                  <i className="fi fi-rr-file-excel" />
-                  Upload Template Excel
-                </button>
+                <div className="seller-template-actions">
+                  <a
+                    href="/templates/Template-Produk-Seller-Madhayana.xlsx"
+                    download="Template-Produk-Seller-Madhayana.xlsx"
+                    className="seller-template-download"
+                  >
+                    <i className="fi fi-rr-download" />
+                    Download Template Excel
+                  </a>
+
+                  <button
+                    type="button"
+                    className="modern-button light"
+                    onClick={onOpenExcelStudio}
+                  >
+                    <i className="fi fi-rr-file-excel" />
+                    Upload Template Excel
+                  </button>
+                </div>
               )}
             </div>
 
@@ -2505,7 +2525,7 @@ function RoleDashboard({
               <div className="modern-section-header">
                 <div>
                   <span className="modern-eyebrow">
-                    DASHBOARD {role === "reseller" ? "SELLER" : role.toUpperCase()}
+                    DASHBOARD {roleLabel.toUpperCase()}
                   </span>
 
                   <h2>{activeMenu}</h2>
