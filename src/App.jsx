@@ -2480,8 +2480,8 @@ function RoleDashboard({
               {role === "reseller" && (
                 <div className="seller-template-actions">
                   <a
-                    href="/templates/Template-Produk-Seller-Madhayana.xlsx"
-                    download="Template-Produk-Seller-Madhayana.xlsx"
+                    href="/templates/Template-Struk-Seller-Madhayana.xlsx"
+                    download="Template-Struk-Seller-Madhayana.xlsx"
                     className="seller-template-download"
                   >
                     <i className="fi fi-rr-download" />

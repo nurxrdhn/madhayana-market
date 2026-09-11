@@ -442,7 +442,7 @@ export default function ExcelReceiptStudio({
 
       if (!sellerId) {
         throw new Error(
-          "Identitas reseller tidak ditemukan. Silakan keluar lalu login kembali."
+          "Identitas seller tidak ditemukan. Silakan keluar lalu login kembali."
         );
       }
 
@@ -463,7 +463,7 @@ export default function ExcelReceiptStudio({
         sellerName:
           user?.name ||
           user?.displayName ||
-          "Reseller",
+          "Seller",
         templateName: templateName.trim(),
         fileName,
         data: computedData,
@@ -495,7 +495,7 @@ export default function ExcelReceiptStudio({
         sellerName:
           user?.name ||
           user?.displayName ||
-          "Reseller",
+          "Seller",
         templateName:
           templateName.trim(),
         fileName,
@@ -816,7 +816,7 @@ export default function ExcelReceiptStudio({
           </button>
 
           <span className="modern-eyebrow">
-            RESELLER TEMPLATE STUDIO
+            SELLER TEMPLATE STUDIO
           </span>
 
           <h1>Template Struk Excel</h1>
@@ -845,9 +845,9 @@ export default function ExcelReceiptStudio({
 
           <span>
             <strong>
-              {user?.name || "Reseller"}
+              {user?.name || "Seller"}
             </strong>
-            <small>Reseller</small>
+            <small>Seller</small>
           </span>
         </div>
       </header>
@@ -991,10 +991,10 @@ export default function ExcelReceiptStudio({
           {templateData && editableFields.length > 0 && (
             <section className="excel-panel-card">
               <div className="excel-panel-title">
-                <h2>Data Reseller</h2>
+                <h2>Data Seller</h2>
                 <p>
                   Field ini boleh diubah oleh
-                  reseller.
+                  seller.
                 </p>
               </div>
 
@@ -1141,17 +1141,17 @@ const ReceiptPreview = forwardRef(
           <div>
             <h2>
               {data.NAMA_RESELLER ||
-                "Nama Reseller"}
+                "Nama Seller"}
             </h2>
 
             <p>
               {data.ALAMAT_RESELLER ||
-                "Alamat reseller"}
+                "Alamat seller"}
             </p>
 
             <small>
               {data.KONTAK_RESELLER ||
-                "Kontak reseller"}
+                "Kontak seller"}
             </small>
           </div>
         </header>
