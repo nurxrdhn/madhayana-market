@@ -2874,6 +2874,16 @@ function SellerProducts({ user }) {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [viewMode, setViewMode] = useState("table");
   const [notice, setNotice] = useState("");
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [creatingProduct, setCreatingProduct] = useState(false);
+  const [productForm, setProductForm] = useState({
+    name: "",
+    category: "Template",
+    price: "",
+    description: "",
+    imageURL: "",
+    downloadURL: "",
+  });
 
   const categories = [
     "Semua",
