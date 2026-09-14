@@ -7,6 +7,7 @@ import {
 
 import { getAuth } from "firebase/auth";
 import { db } from "../firebase/config";
+import { getCurrentSellerIdentity } from "./sellerIdentityService.js";
 
 const TEMPLATE_COLLECTION = "receiptTemplates";
 const PLATFORM_TEMPLATE_ID = "platform-default";
@@ -36,6 +37,8 @@ export async function savePlatformReceiptTemplate({
     throw new Error("Data template belum tersedia.");
   }
 
+  const sellerIdentity = await getCurrentSellerIdentity();
+
   const templateReference = doc(
     db,
     TEMPLATE_COLLECTION,
@@ -45,7 +48,7 @@ export async function savePlatformReceiptTemplate({
   await setDoc(
     templateReference,
     {
-      sellerId: firebaseUser.uid,
+      sellerId: sellerIdentity.sellerId,
       sellerEmail: firebaseUser.email || "",
       sellerName:
         sellerName ||
@@ -72,7 +75,7 @@ export async function savePlatformReceiptTemplate({
 
   return {
     id: PLATFORM_TEMPLATE_ID,
-    sellerId: firebaseUser.uid,
+    sellerId: sellerIdentity.sellerId,
   };
 }
 

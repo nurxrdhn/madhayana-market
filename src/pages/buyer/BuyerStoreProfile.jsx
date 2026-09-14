@@ -44,9 +44,14 @@ export default function BuyerStoreProfile({
         product.resellerId ||
         product.ownerId;
 
-      return productSellerId === store.id;
+      const storeSellerId =
+        store.sellerId ||
+        store.ownerId ||
+        store.id;
+
+      return productSellerId === storeSellerId;
     });
-  }, [products, store.id]);
+  }, [products, store.id, store.sellerId, store.ownerId]);
 
   function toggleFollow() {
     try {

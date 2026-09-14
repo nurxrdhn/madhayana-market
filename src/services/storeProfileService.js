@@ -7,6 +7,7 @@ import {
 
 import { getAuth } from "firebase/auth";
 import { db } from "../firebase/config";
+import { getCurrentSellerIdentity } from "./sellerIdentityService.js";
 
 function getEmailNumber(email = "") {
   const username = String(email)
@@ -98,8 +99,11 @@ export async function saveMyStoreProfile(
     );
   }
 
+  const sellerIdentity = await getCurrentSellerIdentity();
+
   const payload = {
     ownerId: firebaseUser.uid,
+    sellerId: sellerIdentity.sellerId,
     storeId: profile.storeId
       .trim()
       .toUpperCase(),

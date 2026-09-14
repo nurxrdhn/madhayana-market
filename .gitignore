@@ -7,3 +7,12 @@ dist
 # Local backups and temporary inspection files
 *.backup.jsx
 struktur-auth-madhayana.txt
+
+# Server secrets
+.env
+.env.*
+!.env.example
+service-account*.json
+*-service-account.json
+
+.vercel

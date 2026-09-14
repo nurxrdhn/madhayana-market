@@ -5,12 +5,25 @@ import { NotificationProvider } from "./contexts/NotificationContext";
 import "@flaticon/flaticon-uicons/css/all/all.css";
 import "./styles/globals.css";
 import useProducts from "./hooks/useProducts";
+import {
+  subscribeSellerProducts,
+  createProduct as createProductCloud,
+  updateProduct as updateProductCloud,
+  deleteProduct as deleteProductCloud,
+} from "./services/productService.js";
 import ExcelReceiptStudio from "./pages/seller/ExcelReceiptStudio";
 import BuyerReceiptModal from "./pages/buyer/BuyerReceiptModal";
 import BuyerStores from "./pages/buyer/BuyerStores";
 import BuyerStoreProfile from "./pages/buyer/BuyerStoreProfile";
 import { getPlatformReceiptTemplate } from "./services/receiptTemplateCloudService";
 import StoreProfileEditor from "./pages/seller/StoreProfileEditor";
+import {
+  subscribeOrders,
+  createOrder,
+  updateOrderStatus as updateOrderStatusCloud,
+  updateManyOrderStatus,
+} from "./services/orderService.js";
+
 
 const slides = [
   {
@@ -830,6 +843,16 @@ function BuyerDashboard({ user, onLogout }) {
   const [activeMenu, setActiveMenu] = useState("Beranda");
   const [search, setSearch] = useState("");
   const [notice, setNotice] = useState("");
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [creatingProduct, setCreatingProduct] = useState(false);
+  const [productForm, setProductForm] = useState({
+    name: "",
+    category: "Template",
+    price: "",
+    description: "",
+    imageURL: "",
+    downloadURL: "",
+  });
   const [coin, setCoin] = useState(Number(user.coin || 1250));
 
   const [favorites, setFavorites] = useState(() => {
@@ -2842,7 +2865,8 @@ function SellerProducts({ user }) {
     },
   ];
 
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [searchProduct, setSearchProduct] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("Semua");
   const [statusFilter, setStatusFilter] = useState("Semua");
@@ -2911,6 +2935,75 @@ function SellerProducts({ user }) {
       product.stock <= 10
   ).length;
 
+  useEffect(() => {
+    const sellerId = user?.sellerId;
+
+    if (!sellerId) {
+      setProducts([]);
+      setProductsLoading(false);
+      return undefined;
+    }
+
+    setProductsLoading(true);
+
+    const unsubscribe = subscribeSellerProducts(
+      sellerId,
+      (cloudProducts) => {
+        const normalizedProducts = cloudProducts.map((product) => {
+          const statusMap = {
+            active: "Aktif",
+            pending: "Menunggu Verifikasi",
+            draft: "Draft",
+            inactive: "Nonaktif",
+            rejected: "Ditolak",
+          };
+
+          return {
+            ...product,
+            sku:
+              product.sku ||
+              `MDH-${String(product.id || "")
+                .slice(0, 8)
+                .toUpperCase()}`,
+            type: product.type || "Digital",
+            stock:
+              product.stock === undefined ||
+              product.stock === null
+                ? 999
+                : Number(product.stock),
+            sold: Number(product.sold || 0),
+            rating: Number(product.rating || 0),
+            views: Number(product.views || 0),
+            conversion: Number(product.conversion || 0),
+            status:
+              statusMap[
+                String(product.status || "").toLowerCase()
+              ] ||
+              product.status ||
+              "Menunggu Verifikasi",
+            updated: "Firestore",
+          };
+        });
+
+        setProducts(normalizedProducts);
+        setProductsLoading(false);
+      },
+      (error) => {
+        console.error(
+          "Gagal memuat produk seller:",
+          error
+        );
+        setProducts([]);
+        setProductsLoading(false);
+        setNotice(
+          "Gagal memuat produk dari Firestore."
+        );
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user?.sellerId]);
+
   const rupiah = (value) =>
     new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -2924,6 +3017,73 @@ function SellerProducts({ user }) {
     window.setTimeout(() => {
       setNotice("");
     }, 2800);
+  };
+
+  const handleCreateProduct = async (event) => {
+    event.preventDefault();
+
+    if (!user?.sellerId) {
+      showNotice("Seller ID belum tersedia pada akun.");
+      return;
+    }
+
+    if (!productForm.name.trim()) {
+      showNotice("Nama produk wajib diisi.");
+      return;
+    }
+
+    if (
+      productForm.price === "" ||
+      Number(productForm.price) < 0
+    ) {
+      showNotice("Harga produk tidak valid.");
+      return;
+    }
+
+    setCreatingProduct(true);
+
+    try {
+      await createProductCloud({
+        name: productForm.name,
+        category: productForm.category,
+        price: Number(productForm.price),
+        description: productForm.description,
+        imageURL: productForm.imageURL,
+        downloadURL: productForm.downloadURL,
+        sellerId: user.sellerId,
+        sellerName:
+          user.name ||
+          user.displayName ||
+          "Seller Madhayana",
+      });
+
+      setProductForm({
+        name: "",
+        category: "Template",
+        price: "",
+        description: "",
+        imageURL: "",
+        downloadURL: "",
+      });
+
+      setShowAddProduct(false);
+
+      showNotice(
+        "Produk berhasil dikirim dan menunggu verifikasi."
+      );
+    } catch (error) {
+      console.error(
+        "Gagal menambahkan produk:",
+        error
+      );
+
+      showNotice(
+        error?.message ||
+        "Produk gagal ditambahkan."
+      );
+    } finally {
+      setCreatingProduct(false);
+    }
   };
 
   const toggleSelectProduct = (id) => {
@@ -3135,6 +3295,187 @@ function SellerProducts({ user }) {
         </div>
       )}
 
+      {showAddProduct && (
+        <div
+          className="seller-product-modal-backdrop"
+          onMouseDown={(event) => {
+            if (
+              event.target === event.currentTarget &&
+              !creatingProduct
+            ) {
+              setShowAddProduct(false);
+            }
+          }}
+        >
+          <div className="seller-product-modal">
+            <div className="seller-product-modal-head">
+              <div>
+                <span className="seller-product-kicker">
+                  PRODUK BARU
+                </span>
+
+                <h3>Tambah Produk</h3>
+
+                <p>
+                  Produk akan masuk ke tahap verifikasi
+                  sebelum ditayangkan.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="seller-product-modal-close"
+                disabled={creatingProduct}
+                onClick={() => setShowAddProduct(false)}
+              >
+                <i className="fi fi-rr-cross-small" />
+              </button>
+            </div>
+
+            <form
+              className="seller-product-form"
+              onSubmit={handleCreateProduct}
+            >
+              <label>
+                <span>Nama Produk</span>
+                <input
+                  type="text"
+                  value={productForm.name}
+                  placeholder="Contoh: Template Dashboard Premium"
+                  onChange={(event) =>
+                    setProductForm((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+
+              <div className="seller-product-form-grid">
+                <label>
+                  <span>Kategori</span>
+                  <select
+                    value={productForm.category}
+                    onChange={(event) =>
+                      setProductForm((current) => ({
+                        ...current,
+                        category: event.target.value,
+                      }))
+                    }
+                  >
+                    <option value="Template">
+                      Template
+                    </option>
+                    <option value="Website">
+                      Website
+                    </option>
+                    <option value="UI Kit">
+                      UI Kit
+                    </option>
+                    <option value="Desain">
+                      Desain
+                    </option>
+                    <option value="Konten">
+                      Konten
+                    </option>
+                    <option value="Software">
+                      Software
+                    </option>
+                    <option value="Lainnya">
+                      Lainnya
+                    </option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Harga</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={productForm.price}
+                    placeholder="99000"
+                    onChange={(event) =>
+                      setProductForm((current) => ({
+                        ...current,
+                        price: event.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </label>
+              </div>
+
+              <label>
+                <span>Deskripsi</span>
+                <textarea
+                  rows="4"
+                  value={productForm.description}
+                  placeholder="Jelaskan isi dan manfaat produk..."
+                  onChange={(event) =>
+                    setProductForm((current) => ({
+                      ...current,
+                      description: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                <span>URL Gambar</span>
+                <input
+                  type="url"
+                  value={productForm.imageURL}
+                  placeholder="https://..."
+                  onChange={(event) =>
+                    setProductForm((current) => ({
+                      ...current,
+                      imageURL: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                <span>URL File / Unduhan</span>
+                <input
+                  type="url"
+                  value={productForm.downloadURL}
+                  placeholder="https://..."
+                  onChange={(event) =>
+                    setProductForm((current) => ({
+                      ...current,
+                      downloadURL: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <div className="seller-product-form-actions">
+                <button
+                  type="button"
+                  className="seller-product-secondary"
+                  disabled={creatingProduct}
+                  onClick={() => setShowAddProduct(false)}
+                >
+                  Batal
+                </button>
+
+                <button
+                  type="submit"
+                  className="seller-product-primary"
+                  disabled={creatingProduct}
+                >
+                  {creatingProduct
+                    ? "Menyimpan..."
+                    : "Kirim Produk"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <section className="seller-product-command">
         <div>
           <span className="seller-product-kicker">
@@ -3176,11 +3517,7 @@ function SellerProducts({ user }) {
           <button
             type="button"
             className="seller-product-primary"
-            onClick={() =>
-              showNotice(
-                "Form Tambah Produk akan dibuka pada tahap berikutnya."
-              )
-            }
+            onClick={() => setShowAddProduct(true)}
           >
             <i className="fi fi-rr-plus" />
             Tambah Produk
@@ -3777,13 +4114,30 @@ function SellerOrders() {
     },
   ];
 
-  const [orders, setOrders] = useState(initialOrders);
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
   const [searchOrder, setSearchOrder] = useState("");
   const [statusFilter, setStatusFilter] = useState("Semua");
   const [paymentFilter, setPaymentFilter] = useState("Semua");
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = subscribeOrders(
+      (cloudOrders) => {
+        setOrders(cloudOrders);
+        setOrdersLoading(false);
+      },
+      (error) => {
+        console.error("Gagal memuat pesanan dari Firestore:", error);
+        setOrdersLoading(false);
+        setNotice("Gagal memuat pesanan dari Firestore.");
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   const rupiah = (value) =>
     new Intl.NumberFormat("id-ID", {
@@ -3855,54 +4209,77 @@ function SellerOrders() {
     );
   };
 
-  const updateOrderStatus = (id, status) => {
-    setOrders((current) =>
-      current.map((order) =>
-        order.id === id
-          ? { ...order, status }
-          : order
-      )
-    );
-
-    showNotice("Status pesanan berhasil diperbarui.");
+  const updateOrderStatus = async (id, status) => {
+    try {
+      await updateOrderStatusCloud(id, status);
+      showNotice("Status pesanan berhasil diperbarui.");
+    } catch (error) {
+      console.error(error);
+      showNotice("Gagal memperbarui status pesanan.");
+    }
   };
 
-  const bulkProcess = () => {
+  const bulkProcess = async () => {
     if (!selectedOrders.length) {
       showNotice("Pilih pesanan terlebih dahulu.");
       return;
     }
 
-    setOrders((current) =>
-      current.map((order) =>
-        selectedOrders.includes(order.id)
-          ? { ...order, status: "Diproses" }
-          : order
-      )
-    );
+    try {
+      await updateManyOrderStatus(
+        selectedOrders,
+        "Diproses"
+      );
 
-    showNotice(
-      `${selectedOrders.length} pesanan dipindahkan ke Diproses.`
-    );
+      showNotice(
+        `${selectedOrders.length} pesanan dipindahkan ke Diproses.`
+      );
+
+      setSelectedOrders([]);
+    } catch (error) {
+      console.error(error);
+      showNotice("Gagal memperbarui pesanan.");
+    }
   };
 
-  const bulkComplete = () => {
+  const bulkComplete = async () => {
     if (!selectedOrders.length) {
       showNotice("Pilih pesanan terlebih dahulu.");
       return;
     }
 
-    setOrders((current) =>
-      current.map((order) =>
-        selectedOrders.includes(order.id)
-          ? { ...order, status: "Selesai" }
-          : order
-      )
-    );
+    try {
+      await updateManyOrderStatus(
+        selectedOrders,
+        "Selesai"
+      );
 
-    showNotice(
-      `${selectedOrders.length} pesanan diselesaikan.`
-    );
+      showNotice(
+        `${selectedOrders.length} pesanan diselesaikan.`
+      );
+
+      setSelectedOrders([]);
+    } catch (error) {
+      console.error(error);
+      showNotice("Gagal memperbarui pesanan.");
+    }
+  };
+
+  const syncInitialOrders = async () => {
+    try {
+      for (const order of initialOrders) {
+        await createOrder(order);
+      }
+
+      showNotice(
+        "Pesanan awal berhasil disinkronkan ke Firestore."
+      );
+    } catch (error) {
+      console.error(error);
+      showNotice(
+        "Sinkronisasi pesanan gagal."
+      );
+    }
   };
 
   const exportOrders = () => {
@@ -3990,11 +4367,7 @@ function SellerOrders() {
           <button
             type="button"
             className="primary"
-            onClick={() =>
-              showNotice(
-                "Sinkronisasi pesanan siap dihubungkan ke Firestore."
-              )
-            }
+            onClick={syncInitialOrders}
           >
             <i className="fi fi-rr-refresh" />
             Sinkronkan
@@ -5299,7 +5672,7 @@ function RoleDashboard({
             />
           ) : role === "reseller" &&
             activeMenu === "Produk" ? (
-            <SellerProducts />
+            <SellerProducts user={user} />
           ) : role === "reseller" &&
             activeMenu === "Pesanan" ? (
             <SellerOrders />

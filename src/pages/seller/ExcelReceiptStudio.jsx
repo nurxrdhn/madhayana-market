@@ -153,6 +153,7 @@ export default function ExcelReceiptStudio({
   onBack,
 }) {
   const sellerId =
+    user?.sellerId ||
     user?.uid ||
     user?.id ||
     user?.userCode ||
@@ -177,6 +178,7 @@ export default function ExcelReceiptStudio({
   const [savedTemplates, setSavedTemplates] =
     useState(() => {
       const sellerId =
+        user?.sellerId ||
         user?.uid ||
         user?.id ||
         user?.userCode ||
