@@ -2875,6 +2875,22 @@ function SellerProducts({ user }) {
   const [viewMode, setViewMode] = useState("table");
   const [notice, setNotice] = useState("");
   const [showAddProduct, setShowAddProduct] = useState(false);
+  const [showEditProduct, setShowEditProduct] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [savingProduct, setSavingProduct] = useState(false);
+
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+
+  const [editProductForm, setEditProductForm] = useState({
+    name: "",
+    category: "Template",
+    price: "",
+    description: "",
+    imageURL: "",
+    downloadURL: "",
+  });
+
   const [creatingProduct, setCreatingProduct] = useState(false);
   const [productForm, setProductForm] = useState({
     name: "",
@@ -3029,6 +3045,100 @@ function SellerProducts({ user }) {
     }, 2800);
   };
 
+  const askConfirm = ({
+    title,
+    message,
+    confirmText = "Ya, Lanjutkan",
+    danger = false,
+    action,
+  }) => {
+    setConfirmAction({
+      title,
+      message,
+      confirmText,
+      danger,
+      action,
+    });
+  };
+
+  const runConfirmedAction = async () => {
+    if (!confirmAction?.action) return;
+
+    try {
+      setConfirmLoading(true);
+      await confirmAction.action();
+      setConfirmAction(null);
+    } catch (error) {
+      console.error(error);
+      showNotice(error?.message || "Aksi gagal diproses.");
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  const openEditProduct = (product) => {
+    setEditingProduct(product);
+
+    setEditProductForm({
+      name: product.name || "",
+      category: product.category || "Template",
+      price: product.price ?? "",
+      description: product.description || "",
+      imageURL: product.imageURL || "",
+      downloadURL: product.downloadURL || "",
+    });
+
+    setShowEditProduct(true);
+  };
+
+  const requestSaveProduct = (event) => {
+    event.preventDefault();
+
+    if (!editingProduct?.id) {
+      showNotice("Produk yang akan diedit tidak ditemukan.");
+      return;
+    }
+
+    if (!editProductForm.name.trim()) {
+      showNotice("Nama produk wajib diisi.");
+      return;
+    }
+
+    if (
+      editProductForm.price === "" ||
+      Number(editProductForm.price) < 0
+    ) {
+      showNotice("Harga produk tidak valid.");
+      return;
+    }
+
+    askConfirm({
+      title: "Simpan Perubahan?",
+      message: `Perubahan pada produk "${editingProduct.name}" akan disimpan.`,
+      confirmText: "Ya, Simpan",
+      action: async () => {
+        setSavingProduct(true);
+
+        try {
+          await updateProductCloud(editingProduct.id, {
+            name: editProductForm.name.trim(),
+            category: editProductForm.category,
+            price: Number(editProductForm.price),
+            description: editProductForm.description.trim(),
+            imageURL: editProductForm.imageURL.trim(),
+            downloadURL: editProductForm.downloadURL.trim(),
+          });
+
+          setShowEditProduct(false);
+          setEditingProduct(null);
+          showNotice("Perubahan produk berhasil disimpan.");
+        } finally {
+          setSavingProduct(false);
+        }
+      },
+    });
+  };
+
   const handleCreateProduct = async (event) => {
     event.preventDefault();
 
@@ -3128,58 +3238,83 @@ function SellerProducts({ user }) {
     }
   };
 
-  const toggleProductStatus = (id) => {
-    setProducts((current) =>
-      current.map((product) =>
-        product.id === id
-          ? {
-              ...product,
-              status:
-                product.status === "Aktif"
-                  ? "Nonaktif"
-                  : "Aktif",
-            }
-          : product
-      )
-    );
+  const toggleProductStatus = (product) => {
+    if (!product?.id) return;
 
-    showNotice("Status produk berhasil diperbarui.");
+    /*
+     * Seller tidak boleh mengaktifkan produk pending/rejected
+     * tanpa moderasi operator.
+     */
+    if (product.status !== "Aktif") {
+      showNotice(
+        "Produk hanya dapat diaktifkan setelah disetujui operator."
+      );
+      return;
+    }
+
+    askConfirm({
+      title: "Nonaktifkan Produk?",
+      message: `Produk "${product.name}" akan dinonaktifkan.`,
+      confirmText: "Ya, Nonaktifkan",
+      action: async () => {
+        /*
+         * Status moderasi saat ini dikunci Firestore Rules.
+         * Perubahan status seller akan kita sambungkan setelah
+         * workflow moderasi operator selesai.
+         */
+        showNotice(
+          "Perubahan status produk harus melalui sistem moderasi."
+        );
+      },
+    });
   };
 
   const duplicateProduct = (product) => {
-    const duplicate = {
-      ...product,
-      id: `PRD-${String(products.length + 1).padStart(
-        3,
-        "0"
-      )}`,
-      sku: `${product.sku}-COPY`,
-      name: `${product.name} - Salinan`,
-      sold: 0,
-      views: 0,
-      conversion: 0,
-      status: "Draft",
-      updated: "Baru saja",
-    };
+    askConfirm({
+      title: "Duplikasi Produk?",
+      message: `Buat salinan dari produk "${product.name}"?`,
+      confirmText: "Ya, Duplikasi",
+      action: async () => {
+        await createProductCloud({
+          name: `${product.name} - Salinan`,
+          category: product.category || "Template",
+          price: Number(product.price || 0),
+          description: product.description || "",
+          imageURL: product.imageURL || "",
+          downloadURL: product.downloadURL || "",
+          sellerId: user.sellerId,
+          sellerName:
+            user?.name ||
+            user?.displayName ||
+            user?.email ||
+            "Seller Madhayana",
+        });
 
-    setProducts((current) => [
-      duplicate,
-      ...current,
-    ]);
-
-    showNotice("Produk berhasil diduplikasi sebagai Draft.");
+        showNotice(
+          "Produk berhasil diduplikasi dan menunggu verifikasi."
+        );
+      },
+    });
   };
 
-  const deleteProduct = (id) => {
-    setProducts((current) =>
-      current.filter((product) => product.id !== id)
-    );
+  const deleteProduct = (product) => {
+    if (!product?.id) return;
 
-    setSelectedProducts((current) =>
-      current.filter((item) => item !== id)
-    );
+    askConfirm({
+      title: "Hapus Produk?",
+      message: `Produk "${product.name}" akan dihapus secara permanen.`,
+      confirmText: "Ya, Hapus",
+      danger: true,
+      action: async () => {
+        await deleteProductCloud(product.id);
 
-    showNotice("Produk dihapus dari katalog lokal.");
+        setSelectedProducts((current) =>
+          current.filter((item) => item !== product.id)
+        );
+
+        showNotice("Produk berhasil dihapus.");
+      },
+    });
   };
 
   const bulkActivate = () => {
@@ -3188,16 +3323,8 @@ function SellerProducts({ user }) {
       return;
     }
 
-    setProducts((current) =>
-      current.map((product) =>
-        selectedProducts.includes(product.id)
-          ? { ...product, status: "Aktif" }
-          : product
-      )
-    );
-
     showNotice(
-      `${selectedProducts.length} produk diaktifkan.`
+      "Aktivasi produk harus melalui verifikasi operator."
     );
   };
 
@@ -3207,16 +3334,8 @@ function SellerProducts({ user }) {
       return;
     }
 
-    setProducts((current) =>
-      current.map((product) =>
-        selectedProducts.includes(product.id)
-          ? { ...product, status: "Nonaktif" }
-          : product
-      )
-    );
-
     showNotice(
-      `${selectedProducts.length} produk dinonaktifkan.`
+      "Perubahan status produk harus melalui sistem moderasi."
     );
   };
 
@@ -3226,15 +3345,22 @@ function SellerProducts({ user }) {
       return;
     }
 
-    setProducts((current) =>
-      current.filter(
-        (product) =>
-          !selectedProducts.includes(product.id)
-      )
-    );
+    const ids = [...selectedProducts];
 
-    setSelectedProducts([]);
-    showNotice("Produk terpilih berhasil dihapus.");
+    askConfirm({
+      title: "Hapus Produk Terpilih?",
+      message: `${ids.length} produk akan dihapus secara permanen.`,
+      confirmText: `Hapus ${ids.length} Produk`,
+      danger: true,
+      action: async () => {
+        await Promise.all(
+          ids.map((id) => deleteProductCloud(id))
+        );
+
+        setSelectedProducts([]);
+        showNotice(`${ids.length} produk berhasil dihapus.`);
+      },
+    });
   };
 
   const exportProducts = () => {
@@ -3302,6 +3428,198 @@ function SellerProducts({ user }) {
         <div className="seller-product-notice">
           <i className="fi fi-rr-check-circle" />
           {notice}
+        </div>
+      )}
+
+      {confirmAction && (
+        <div className="seller-confirm-backdrop">
+          <div className="seller-confirm-modal">
+            <div className={`seller-confirm-icon ${confirmAction.danger ? "danger" : ""}`}>
+              <i
+                className={
+                  confirmAction.danger
+                    ? "fi fi-rr-triangle-warning"
+                    : "fi fi-rr-interrogation"
+                }
+              />
+            </div>
+
+            <h3>{confirmAction.title}</h3>
+            <p>{confirmAction.message}</p>
+
+            <div className="seller-confirm-actions">
+              <button
+                type="button"
+                className="secondary"
+                disabled={confirmLoading}
+                onClick={() => setConfirmAction(null)}
+              >
+                Batal
+              </button>
+
+              <button
+                type="button"
+                className={confirmAction.danger ? "danger" : "primary"}
+                disabled={confirmLoading}
+                onClick={runConfirmedAction}
+              >
+                {confirmLoading
+                  ? "Memproses..."
+                  : confirmAction.confirmText}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditProduct && editingProduct && (
+        <div
+          className="seller-product-modal-backdrop"
+          onMouseDown={(event) => {
+            if (
+              event.target === event.currentTarget &&
+              !savingProduct
+            ) {
+              setShowEditProduct(false);
+            }
+          }}
+        >
+          <div className="seller-product-modal">
+            <div className="seller-product-modal-head">
+              <div>
+                <span className="seller-product-kicker">
+                  EDIT PRODUK
+                </span>
+                <h3>Edit Produk</h3>
+                <p>
+                  Perbarui informasi produk seller Madhayana.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                disabled={savingProduct}
+                onClick={() => setShowEditProduct(false)}
+              >
+                <i className="fi fi-rr-cross-small" />
+              </button>
+            </div>
+
+            <form
+              className="seller-product-form"
+              onSubmit={requestSaveProduct}
+            >
+              <label>
+                <span>Nama Produk</span>
+                <input
+                  type="text"
+                  value={editProductForm.name}
+                  onChange={(event) =>
+                    setEditProductForm((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+
+              <div className="seller-product-form-grid">
+                <label>
+                  <span>Kategori</span>
+                  <input
+                    type="text"
+                    value={editProductForm.category}
+                    onChange={(event) =>
+                      setEditProductForm((current) => ({
+                        ...current,
+                        category: event.target.value,
+                      }))
+                    }
+                  />
+                </label>
+
+                <label>
+                  <span>Harga</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editProductForm.price}
+                    onChange={(event) =>
+                      setEditProductForm((current) => ({
+                        ...current,
+                        price: event.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </label>
+              </div>
+
+              <label>
+                <span>Deskripsi</span>
+                <textarea
+                  rows="4"
+                  value={editProductForm.description}
+                  onChange={(event) =>
+                    setEditProductForm((current) => ({
+                      ...current,
+                      description: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                <span>URL Gambar</span>
+                <input
+                  type="url"
+                  value={editProductForm.imageURL}
+                  onChange={(event) =>
+                    setEditProductForm((current) => ({
+                      ...current,
+                      imageURL: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                <span>URL File / Unduhan</span>
+                <input
+                  type="url"
+                  value={editProductForm.downloadURL}
+                  onChange={(event) =>
+                    setEditProductForm((current) => ({
+                      ...current,
+                      downloadURL: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <div className="seller-product-form-actions">
+                <button
+                  type="button"
+                  className="secondary"
+                  disabled={savingProduct}
+                  onClick={() => setShowEditProduct(false)}
+                >
+                  Batal
+                </button>
+
+                <button
+                  type="submit"
+                  className="primary"
+                  disabled={savingProduct}
+                >
+                  {savingProduct
+                    ? "Menyimpan..."
+                    : "Simpan Perubahan"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
@@ -3913,9 +4231,7 @@ function SellerProducts({ user }) {
                         type="button"
                         className={`seller-product-status ${product.status.toLowerCase()}`}
                         onClick={() =>
-                          toggleProductStatus(
-                            product.id
-                          )
+                          toggleProductStatus(product)
                         }
                       >
                         <span />
@@ -3928,11 +4244,7 @@ function SellerProducts({ user }) {
                         <button
                           type="button"
                           title="Edit"
-                          onClick={() =>
-                            showNotice(
-                              `Edit ${product.name}`
-                            )
-                          }
+                          onClick={() => openEditProduct(product)}
                         >
                           <i className="fi fi-rr-edit" />
                         </button>
@@ -3952,7 +4264,7 @@ function SellerProducts({ user }) {
                           title="Hapus"
                           className="danger"
                           onClick={() =>
-                            deleteProduct(product.id)
+                            deleteProduct(product)
                           }
                         >
                           <i className="fi fi-rr-trash" />
@@ -4016,7 +4328,7 @@ function SellerProducts({ user }) {
                     <button
                       type="button"
                       onClick={() =>
-                        toggleProductStatus(product.id)
+                        toggleProductStatus(product)
                       }
                     >
                       {product.status === "Aktif"

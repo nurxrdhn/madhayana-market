@@ -9370,3 +9370,100 @@ h3,
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================
+   Madhayana Custom Confirmation
+   ========================================================= */
+
+.seller-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(5px);
+}
+
+.seller-confirm-modal {
+  width: min(430px, 100%);
+  padding: 28px;
+  border-radius: 22px;
+  background: var(--surface, #fff);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+  text-align: center;
+}
+
+.seller-confirm-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+  background: rgba(249, 115, 22, 0.12);
+  color: #f97316;
+}
+
+.seller-confirm-icon.danger {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+
+.seller-confirm-modal h3 {
+  margin: 0 0 8px;
+}
+
+.seller-confirm-modal p {
+  margin: 0;
+  opacity: 0.72;
+  line-height: 1.6;
+}
+
+.seller-confirm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.seller-confirm-actions button {
+  flex: 1;
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.seller-confirm-actions .secondary {
+  background: rgba(148, 163, 184, 0.15);
+}
+
+.seller-confirm-actions .primary {
+  background: #f97316;
+  color: #fff;
+}
+
+.seller-confirm-actions .danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.seller-confirm-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 600px) {
+  .seller-confirm-modal {
+    padding: 22px 18px;
+  }
+
+  .seller-confirm-actions {
+    flex-direction: column-reverse;
+  }
+}
